@@ -46,9 +46,9 @@ The subject explicitly allows **Flutter** without requiring SceneKit/ViroCore. S
 
 ```
 swifty-proteins/
-├── mobile/          # Expo app (React Native)
-├── backend/         # Next.js API + tRPC + PostgreSQL
-├── .husky/          # Git hooks (commitlint)
+├── expo/           # Expo app (React Native)
+├── nextjs/         # Next.js API + tRPC + PostgreSQL
+├── .husky/         # Git hooks (commitlint)
 └── pnpm-workspace.yaml  # Monorepo configuration
 ```
 
@@ -58,10 +58,10 @@ swifty-proteins/
 # Install dependencies
 pnpm install
 
-# Run both mobile and backend
+# Run both expo and nextjs
 pnpm dev
 
 # Run individually
-pnpm dev:mobile    # Expo on http://localhost:8081
-pnpm dev:backend   # Next.js on http://localhost:3000
+pnpm dev:expo      # Expo on http://localhost:8081
+pnpm dev:nextjs    # Next.js on http://localhost:3000
 ```
