@@ -1,37 +1,20 @@
-import { StyleSheet, View } from 'react-native';
+import { Redirect } from 'expo-router';
+import { useEffect } from 'react';
+import * as SplashScreen from 'expo-splash-screen';
 
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
+// Garder le splash screen visible pour l'effet de chargement
+SplashScreen.preventAutoHideAsync();
 
-export default function HomeScreen() {
-    return (
-        <ThemedView style={styles.container}>
-            <View style={styles.content}>
-                <ThemedText type="title">Swifty Proteins</ThemedText>
-                <ThemedText type="subtitle">
-                    Protein 3D Visualizer
-                </ThemedText>
-                <ThemedText style={styles.description}>
-                    Explore protein structures in 3D with interactive visualizations.
-                </ThemedText>
-            </View>
-        </ThemedView>
-    );
+export default function Index() {
+    useEffect(() => {
+        // Cacher le splash screen après un délai pour qu'il soit visible
+        const timer = setTimeout(() => {
+            SplashScreen.hideAsync();
+        }, 2500); // 2.5 secondes de splash screen
+
+        return () => clearTimeout(timer);
+    }, []);
+
+    // TOUJOURS rediriger vers le login (requis par le sujet)
+    return <Redirect href="/login" />;
 }
-
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        padding: 20,
-    },
-    content: {
-        alignItems: 'center',
-        gap: 10,
-    },
-    description: {
-        marginTop: 20,
-        textAlign: 'center',
-    },
-});

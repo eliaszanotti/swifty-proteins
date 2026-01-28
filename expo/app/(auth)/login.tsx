@@ -1,4 +1,4 @@
-import { Link, useRouter } from 'expo-router';
+import { Link, useRouter } from "expo-router";
 import {
 	Group,
 	Anchor,
@@ -10,16 +10,16 @@ import {
 	Text,
 	XStack,
 	YStack,
-} from 'tamagui';
+} from "tamagui";
 
 export default function LoginScreen() {
 	return (
 		<YStack
 			flex={1}
-			backgroundColor="$background"
-			padding="$4"
-			justifyContent="center"
-			alignItems="center"
+			// backgroundColor="$background"
+			// padding="$4"
+			// justifyContent="center"
+			// alignItems="center"
 			gap="$4"
 		>
 			{/* Logo / Icon placeholder */}
@@ -27,7 +27,7 @@ export default function LoginScreen() {
 				width={100}
 				height={100}
 				borderRadius="$8"
-				backgroundColor="$backgroundStrong"
+				// backgroundColor="$backgroundStrong"
 				justifyContent="center"
 				alignItems="center"
 			>
@@ -48,7 +48,10 @@ export default function LoginScreen() {
 				maxWidth={400}
 				padding="$6"
 				gap="$4"
-				elevation
+				shadowColor="#000"
+				shadowOffset={{ width: 0, height: 2 }}
+				shadowOpacity={0.1}
+				shadowRadius={4}
 			>
 				<YStack gap="$4">
 					<YStack gap="$2">
@@ -66,10 +69,10 @@ export default function LoginScreen() {
 						<Text fontWeight="bold" color="$color">
 							Password
 						</Text>
-					<Input placeholder="••••••••" secureTextEntry />
+						<Input placeholder="••••••••" secureTextEntry />
 					</YStack>
 
-					<YStack gap="$3" marginTop="$2">
+					<YStack gap="$3">
 						<Button
 							size="$5"
 							theme="blue"
@@ -94,7 +97,7 @@ export default function LoginScreen() {
 
 			{/* Register Link */}
 			<XStack gap="$2">
-				<Paragraph color="$colorMuted">Don't have an account?</Paragraph>
+				<Paragraph>Don&apos;t have an account?</Paragraph>
 				<Link href="/register">
 					<Anchor color="$blue10">Sign up</Anchor>
 				</Link>

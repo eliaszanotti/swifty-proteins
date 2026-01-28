@@ -47,7 +47,10 @@ export default function RegisterScreen() {
 				maxWidth={400}
 				padding="$6"
 				gap="$4"
-				elevation
+				shadowColor="#000"
+				shadowOffset={{ width: 0, height: 2 }}
+				shadowOpacity={0.1}
+				shadowRadius={4}
 			>
 				<YStack gap="$4">
 					<YStack gap="$2">
