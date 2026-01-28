@@ -5,9 +5,9 @@
     "private": true,
     "description": "42 School project - 3D Protein visualizer with Expo + Next.js",
     "scripts": {
-        "dev": "pnpm --filter backend dev & pnpm --filter mobile start",
-        "dev:backend": "pnpm --filter backend dev",
-        "dev:mobile": "pnpm --filter mobile start",
+        "dev": "pnpm --filter nextjs dev & pnpm --filter expo start",
+        "dev:nextjs": "pnpm --filter nextjs dev",
+        "dev:expo": "pnpm --filter expo start",
         "build": "pnpm --filter \"./**\" build",
         "lint": "pnpm --filter \"./**\" lint",
         "prepare": "husky"

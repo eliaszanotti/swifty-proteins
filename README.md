@@ -41,3 +41,27 @@ The subject explicitly allows **Flutter** without requiring SceneKit/ViroCore. S
 - Can build native `.ipa` and `.apk` via EAS Build
 - Large ecosystem and community support
 - Future-proof skill set with high market demand
+
+## Project Structure
+
+```
+swifty-proteins/
+├── mobile/          # Expo app (React Native)
+├── backend/         # Next.js API + tRPC + PostgreSQL
+├── .husky/          # Git hooks (commitlint)
+└── pnpm-workspace.yaml  # Monorepo configuration
+```
+
+## Getting Started
+
+```bash
+# Install dependencies
+pnpm install
+
+# Run both mobile and backend
+pnpm dev
+
+# Run individually
+pnpm dev:mobile    # Expo on http://localhost:8081
+pnpm dev:backend   # Next.js on http://localhost:3000
+```
