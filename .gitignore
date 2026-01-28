@@ -29,6 +29,11 @@ iOSInjectionProject/
 node_modules/
 .pnpm-store/
 
+# Expo / Tamagui
+.expo/
+.tamagui/
+
+
 # IDE
 .vscode/
 .idea/

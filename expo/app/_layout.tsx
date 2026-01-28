@@ -17,30 +17,8 @@ import { tamaguiConfig } from "../tamagui.config";
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
-export const unstable_settings = {
-	anchor: "(tabs)",
-};
-
-function RootLayoutNav() {
-	const colorScheme = useColorScheme();
-
-	return (
-		<ThemeProvider
-			value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
-		>
-			<Stack>
-				<Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-				<Stack.Screen
-					name="modal"
-					options={{ presentation: "modal", title: "Modal" }}
-				/>
-			</Stack>
-			<StatusBar style="auto" />
-		</ThemeProvider>
-	);
-}
-
 export default function RootLayout() {
+	const colorScheme = useColorScheme();
 	const [loaded] = useFonts({
 		Inter: require("@tamagui/font-inter/otf/Inter-Medium.otf"),
 		InterBold: require("@tamagui/font-inter/otf/Inter-Bold.otf"),
@@ -58,7 +36,14 @@ export default function RootLayout() {
 
 	return (
 		<TamaguiProvider config={tamaguiConfig}>
-			<RootLayoutNav />
+			<ThemeProvider
+				value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
+			>
+				<Stack>
+					<Stack.Screen name="index" options={{ headerShown: false }} />
+				</Stack>
+				<StatusBar style="auto" />
+			</ThemeProvider>
 		</TamaguiProvider>
 	);
 }
