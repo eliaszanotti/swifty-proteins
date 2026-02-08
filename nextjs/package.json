@@ -2,6 +2,16 @@
 	"name": "nextjs",
 	"version": "0.1.0",
 	"private": true,
+	"exports": {
+		"./trpc": {
+			"types": "./trpc/trpc.ts",
+			"default": "./trpc/trpc.ts"
+		},
+		"./trpc/*": {
+			"types": "./trpc/*.ts",
+			"default": "./trpc/*.ts"
+		}
+	},
 	"scripts": {
 		"dev": "next dev",
 		"build": "next build",
@@ -12,6 +22,7 @@
 		"@auth/prisma-adapter": "^2.11.1",
 		"@prisma/adapter-pg": "^7.3.0",
 		"@prisma/client": "^7.3.0",
+		"@swifty-proteins/shared": "workspace:*",
 		"@tanstack/react-query": "^5.90.20",
 		"@trpc/client": "^11.9.0",
 		"@trpc/react-query": "^11.9.0",
