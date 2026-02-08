@@ -1,0 +1,23 @@
+{
+    "entry": [
+        "expo/app/_layout.tsx",
+        "nextjs/app/api/trpc/[...next]/route.ts"
+    ],
+    "project": [
+        "expo/**/*.ts",
+        "expo/**/*.tsx",
+        "nextjs/**/*.ts",
+        "nextjs/**/*.tsx",
+        "shared/**/*.ts"
+    ],
+    "ignore": [
+        "node_modules/**",
+        ".next/**",
+        "expo/.expo/**",
+        "expo/.expo-shared/**",
+        "**/*.config.*",
+        "**/dist/**",
+        "**/build/**"
+    ],
+    "ignoreExportsUsedInFile": true
+}
