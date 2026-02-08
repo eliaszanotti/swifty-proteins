@@ -1,56 +1,83 @@
+import { useEffect, useState } from "react";
 import { router } from "expo-router";
 import {
-	Button,
-	Paragraph,
-	Text,
-	XStack,
-	YStack,
-	Input,
-	ScrollView,
+    Button,
+    Paragraph,
+    Text,
+    XStack,
+    YStack,
+    Input,
+    ScrollView,
 } from "tamagui";
 import { SafeView } from "@/components/safe-view";
-
-// Dummy ligand data - 10 empty items
-const DUMMY_LIGANDS = Array.from({ length: 10 }, (_, i) => ({
-	id: i + 1,
-	name: `Ligand ${i + 1}`,
-}));
+import { loadLigands, type Ligand } from "@/lib/ligands";
 
 export default function LigandsScreen() {
-	return (
-		<SafeView flex={1}>
-			<YStack flex={1} bg="$background">
-				<YStack p="$4" gap="$4">
-					<Text fontSize="$8" fontWeight="bold">
-						Ligands
-					</Text>
-					<Paragraph>
-						Select a ligand to visualize its 3D structure
-					</Paragraph>
+    const [ligands, setLigands] = useState<Ligand[]>([]);
+    const [filteredLigands, setFilteredLigands] = useState<Ligand[]>([]);
+    const [searchQuery, setSearchQuery] = useState("");
+    const [isLoading, setIsLoading] = useState(true);
 
-					<Input
-						placeholder="Search ligands..."
-						autoCapitalize="none"
-					/>
-				</YStack>
+    useEffect(() => {
+        loadLigands().then((data) => {
+            setLigands(data);
+            setFilteredLigands(data);
+            setIsLoading(false);
+        });
+    }, []);
 
-				<ScrollView flex={1} px="$4">
-					<YStack gap="$2">
-						{DUMMY_LIGANDS.map((ligand) => (
-							<Button
-								key={ligand.id}
-								onPress={() =>
-									router.push(
-										`/(main)/protein?id=${ligand.id}`,
-									)
-								}
-							>
-								{ligand.name}
-							</Button>
-						))}
-					</YStack>
-				</ScrollView>
-			</YStack>
-		</SafeView>
-	);
+    useEffect(() => {
+        if (searchQuery.trim() === "") {
+            setFilteredLigands(ligands);
+        } else {
+            const query = searchQuery.toLowerCase();
+            const filtered = ligands.filter((ligand) =>
+                ligand.name.toLowerCase().includes(query)
+            );
+            setFilteredLigands(filtered);
+        }
+    }, [searchQuery, ligands]);
+
+    return (
+        <SafeView flex={1}>
+            <YStack flex={1} bg="$background">
+                <YStack p="$4" gap="$4">
+                    <Text fontSize="$8" fontWeight="bold">
+                        Ligands
+                    </Text>
+                    <Paragraph>
+                        Select a ligand to visualize its 3D structure
+                    </Paragraph>
+
+                    <Input
+                        placeholder="Search ligands..."
+                        autoCapitalize="none"
+                        value={searchQuery}
+                        onChangeText={setSearchQuery}
+                    />
+                </YStack>
+
+                {isLoading ? (
+                    <YStack flex={1} justifyContent="center" alignItems="center">
+                        <Text>Loading ligands...</Text>
+                    </YStack>
+                ) : (
+                    <ScrollView flex={1} px="$4">
+                        <YStack gap="$2">
+                            {filteredLigands.map((ligand) => (
+                                <Button
+                                    key={ligand.id}
+                                    onPress={() =>
+                                        router.push(`/(main)/protein?id=${ligand.id}`)
+                                    }
+                                >
+                                    {ligand.name}
+                                </Button>
+                            ))}
+                        </YStack>
+                    </ScrollView>
+                )}
+            </YStack>
+        </SafeView>
+    );
 }
