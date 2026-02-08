@@ -54,9 +54,6 @@ export default function RegisterScreen() {
 
 						<YStack gap="$2">
 							<Button>Sign Up</Button>
-							<Button variant="outlined">
-								Sign in with Fingerprint
-							</Button>
 						</YStack>
 					</YStack>
 				</Card>
