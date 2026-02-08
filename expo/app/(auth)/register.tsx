@@ -63,8 +63,10 @@ export default function RegisterScreen() {
 
 				<XStack gap="$2">
 					<Paragraph>Already have an account?</Paragraph>
-					<Link href="/login">
-						<Anchor color="$blue10">Sign in</Anchor>
+					<Link href="/login" asChild>
+						<Text color="$blue10" style={{ textDecorationLine: 'underline' }}>
+							Sign in
+						</Text>
 					</Link>
 				</XStack>
 			</YStack>
