@@ -18,7 +18,7 @@ const DUMMY_LIGANDS = Array.from({ length: 10 }, (_, i) => ({
 
 export default function LigandsScreen() {
 	return (
-		<SafeView>
+		<SafeView flex={1}>
 			<YStack flex={1} bg="$background">
 				<YStack p="$4" gap="$4">
 					<Text fontSize="$8" fontWeight="bold">
@@ -28,7 +28,10 @@ export default function LigandsScreen() {
 						Select a ligand to visualize its 3D structure
 					</Paragraph>
 
-					<Input placeholder="Search ligands..." autoCapitalize="none" />
+					<Input
+						placeholder="Search ligands..."
+						autoCapitalize="none"
+					/>
 				</YStack>
 
 				<ScrollView flex={1} px="$4">
@@ -36,9 +39,10 @@ export default function LigandsScreen() {
 						{DUMMY_LIGANDS.map((ligand) => (
 							<Button
 								key={ligand.id}
-								variant="outlined"
 								onPress={() =>
-									router.push(`/(main)/protein?id=${ligand.id}`)
+									router.push(
+										`/(main)/protein?id=${ligand.id}`,
+									)
 								}
 							>
 								{ligand.name}
