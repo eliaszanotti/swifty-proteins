@@ -13,6 +13,7 @@ import "react-native-reanimated";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { TamaguiProvider } from "tamagui";
 import { tamaguiConfig } from "@/lib/tamagui.config";
+import { TRPCProvider } from "@/providers/trpc-provider";
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -35,19 +36,21 @@ export default function RootLayout() {
 	}
 
 	return (
-		<TamaguiProvider config={tamaguiConfig}>
-			<ThemeProvider
-				value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
-			>
-				<Stack
-					screenOptions={{
-						headerShown: false,
-					}}
+		<TRPCProvider>
+			<TamaguiProvider config={tamaguiConfig}>
+				<ThemeProvider
+					value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
 				>
-					<Stack.Screen name="index" />
-				</Stack>
-				<StatusBar style="auto" />
-			</ThemeProvider>
-		</TamaguiProvider>
+					<Stack
+						screenOptions={{
+							headerShown: false,
+						}}
+					>
+						<Stack.Screen name="index" />
+					</Stack>
+					<StatusBar style="auto" />
+				</ThemeProvider>
+			</TamaguiProvider>
+		</TRPCProvider>
 	);
 }
