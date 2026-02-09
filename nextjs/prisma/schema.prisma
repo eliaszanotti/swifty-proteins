@@ -8,7 +8,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  schemas   = ["dev"]
+  schemas   = ["public"]
 }
 
 model User {
@@ -24,7 +24,7 @@ model User {
 
   @@unique([email])
   @@map("user")
-  @@schema("dev")
+  @@schema("public")
 }
 
 model Session {
@@ -41,7 +41,7 @@ model Session {
   @@unique([token])
   @@index([userId])
   @@map("session")
-  @@schema("dev")
+  @@schema("public")
 }
 
 model Account {
@@ -62,7 +62,7 @@ model Account {
 
   @@index([userId])
   @@map("account")
-  @@schema("dev")
+  @@schema("public")
 }
 
 model Verification {
@@ -75,5 +75,5 @@ model Verification {
 
   @@index([identifier])
   @@map("verification")
-  @@schema("dev")
+  @@schema("public")
 }
