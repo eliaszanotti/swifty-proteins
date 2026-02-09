@@ -1,3 +1,5 @@
+import { Asset } from "expo-asset";
+
 export interface Ligand {
     id: string;
     name: string;
@@ -6,8 +8,12 @@ export interface Ligand {
 export async function loadLigands(): Promise<Ligand[]> {
     try {
         // Load ligands from assets
-        const file = require("@/assets/ligands.txt");
-        const text = file.default || file;
+        const asset = Asset.fromModule(require("@/assets/ligands.txt"));
+        await asset.downloadAsync();
+
+        // Fetch the text content from the downloaded asset
+        const response = await fetch(asset.localUri || asset.uri);
+        const text = await response.text();
 
         // Parse lines and create ligand objects
         const lines = text.split("\n").filter((line: string) => line.trim() !== "");
