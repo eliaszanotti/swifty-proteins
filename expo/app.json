@@ -13,7 +13,7 @@
       "infoPlist": {
         "NSFaceIDUsageDescription": "We use Face ID to securely authenticate you"
       },
-      "bundleIdentifier": "com.anonymous.mobile"
+      "bundleIdentifier": "com.luhumber.swiftyproteins"
     },
     "android": {
       "adaptiveIcon": {

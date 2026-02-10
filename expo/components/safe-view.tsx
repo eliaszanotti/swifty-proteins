@@ -8,13 +8,17 @@ export function SafeView({ style, children, ...props }: SafeViewProps) {
 
 	return (
 		<View
-			style={{
-				paddingTop: insets.top,
-				paddingBottom: insets.bottom,
-				paddingLeft: insets.left,
-				paddingRight: insets.right,
-			}}
-			background="$background"
+			style={[
+				{
+					flex: 1,
+					paddingTop: insets.top,
+					paddingBottom: insets.bottom,
+					paddingLeft: insets.left,
+					paddingRight: insets.right,
+				},
+				style,
+			]}
+			bg="$background"
 			{...props}
 		>
 			{children}
