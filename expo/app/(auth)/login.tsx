@@ -10,17 +10,36 @@ import {
 	YStack,
 } from "tamagui";
 import { SafeView } from "@/components/safe-view";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { trpc } from "@/lib/trpc";
 import { Alert } from "react-native";
+import {
+	isBiometricAvailable,
+	authenticateWithBiometric,
+} from "@/lib/biometric-auth";
+import {
+	saveCredentials,
+	getCredentials,
+} from "@/lib/credentials-storage";
 
 export default function LoginScreen() {
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
+	const [biometricAvailable, setBiometricAvailable] = useState(false);
+
+	useEffect(() => {
+		checkBiometric();
+	}, []);
+
+	const checkBiometric = async () => {
+		const available = await isBiometricAvailable();
+		setBiometricAvailable(available);
+	};
 
 	const loginMutation = trpc.auth.login.useMutation({
-		onSuccess: (data) => {
+		onSuccess: async (data) => {
 			if (data.success) {
+				await saveCredentials(email, password);
 				router.replace("/(main)/ligands");
 			} else {
 				Alert.alert("Login Failed", data.message || "Invalid credentials");
@@ -38,6 +57,29 @@ export default function LoginScreen() {
 		}
 
 		loginMutation.mutate({ email, password });
+	};
+
+	const handleBiometricLogin = async () => {
+		const credentials = await getCredentials();
+
+		if (!credentials) {
+			Alert.alert(
+				"No saved credentials",
+				"Please login with your password first to enable biometric login",
+			);
+			return;
+		}
+
+		const result = await authenticateWithBiometric();
+
+		if (result.success) {
+			loginMutation.mutate({
+				email: credentials.email,
+				password: credentials.password,
+			});
+		} else {
+			Alert.alert("Authentication Failed", result.error || "Please try again");
+		}
 	};
 
 	return (
@@ -81,9 +123,15 @@ export default function LoginScreen() {
 							>
 								{loginMutation.isPending ? "Signing In..." : "Sign In"}
 							</Button>
-							<Button variant="outlined">
-								Sign in with Fingerprint
-							</Button>
+							{biometricAvailable && (
+								<Button
+									variant="outlined"
+									onPress={handleBiometricLogin}
+									disabled={loginMutation.isPending}
+								>
+									Sign in with Fingerprint
+								</Button>
+							)}
 						</YStack>
 					</YStack>
 				</Card>

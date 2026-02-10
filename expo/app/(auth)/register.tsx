@@ -13,6 +13,7 @@ import { SafeView } from "@/components/safe-view";
 import { useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { Alert } from "react-native";
+import { saveCredentials } from "@/lib/credentials-storage";
 
 export default function RegisterScreen() {
 	const [name, setName] = useState("");
@@ -21,8 +22,9 @@ export default function RegisterScreen() {
 	const [confirmPassword, setConfirmPassword] = useState("");
 
 	const registerMutation = trpc.auth.register.useMutation({
-		onSuccess: (data) => {
+		onSuccess: async (data) => {
 			if (data.success) {
+				await saveCredentials(email, password);
 				Alert.alert(
 					"Success",
 					"Account created! Please login.",
