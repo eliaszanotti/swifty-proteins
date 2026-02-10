@@ -1,8 +1,6 @@
 import { Link, router } from "expo-router";
 import {
-	Anchor,
 	Button,
-	Card,
 	Input,
 	Paragraph,
 	Text,
@@ -39,7 +37,6 @@ export default function LoginScreen() {
 	const loginMutation = trpc.auth.login.useMutation({
 		onSuccess: async (data) => {
 			if (data.success) {
-				await saveCredentials(email, password);
 				router.replace("/(main)/ligands");
 			} else {
 				Alert.alert("Login Failed", data.message || "Invalid credentials");
@@ -50,12 +47,13 @@ export default function LoginScreen() {
 		},
 	});
 
-	const handleLogin = () => {
+	const handleLogin = async () => {
 		if (!email || !password) {
 			Alert.alert("Error", "Please fill in all fields");
 			return;
 		}
 
+		await saveCredentials(email, password);
 		loginMutation.mutate({ email, password });
 	};
 
@@ -83,63 +81,54 @@ export default function LoginScreen() {
 	};
 
 	return (
-		<SafeView>
-			<YStack gap="$4" p="$4">
-				<Text fontSize="$10" fontWeight="bold" color="$color">
+		<SafeView flex={1}>
+			<YStack style={{ flex: 1, justifyContent: "center" }} bg="$background" p="$4" gap="$4">
+				<Text fontSize="$8" fontWeight="bold">
 					Swifty Proteins
 				</Text>
-				<Paragraph>Protein 3D Visualizer</Paragraph>
+				<Paragraph>
+					Sign in to explore 3D protein structures
+				</Paragraph>
 
-				<Card width="100%">
-					<Card.Header>
-						<Text>Login</Text>
-					</Card.Header>
-					<YStack gap="$4">
-						<YStack gap="$2">
-							<Text color="$color">Email</Text>
-							<Input
-								placeholder="your@email.com"
-								autoCapitalize="none"
-								keyboardType="email-address"
-								value={email}
-								onChangeText={setEmail}
-							/>
-						</YStack>
+				<Input
+					placeholder="Email"
+					autoCapitalize="none"
+					keyboardType="email-address"
+					value={email}
+					onChangeText={setEmail}
+				/>
 
-						<YStack gap="$2">
-							<Text color="$color">Password</Text>
-							<Input
-								placeholder="••••••••"
-								secureTextEntry
-								value={password}
-								onChangeText={setPassword}
-							/>
-						</YStack>
+				<Input
+					placeholder="Password"
+					secureTextEntry
+					value={password}
+					onChangeText={setPassword}
+				/>
 
-						<YStack gap="$2">
-							<Button
-								onPress={handleLogin}
-								disabled={loginMutation.isPending}
-							>
-								{loginMutation.isPending ? "Signing In..." : "Sign In"}
-							</Button>
-							{biometricAvailable && (
-								<Button
-									variant="outlined"
-									onPress={handleBiometricLogin}
-									disabled={loginMutation.isPending}
-								>
-									Sign in with Fingerprint
-								</Button>
-							)}
-						</YStack>
-					</YStack>
-				</Card>
+				<YStack gap="$2">
+					<Button
+						onPress={handleLogin}
+						disabled={loginMutation.isPending}
+						opacity={loginMutation.isPending ? 0.5 : 1}
+					>
+						{loginMutation.isPending ? "Signing In..." : "Sign In"}
+					</Button>
 
-				<XStack gap="$2">
-					<Paragraph>Don&apos;t have an account?</Paragraph>
+					{biometricAvailable && (
+						<Button
+							onPress={handleBiometricLogin}
+							disabled={loginMutation.isPending}
+							opacity={loginMutation.isPending ? 0.5 : 1}
+						>
+							Sign in with Face ID
+						</Button>
+					)}
+				</YStack>
+
+				<XStack style={{ justifyContent: "center" }} gap="$2">
+					<Text>Don't have an account?</Text>
 					<Link href="/register" asChild>
-						<Text color="$blue10" style={{ textDecorationLine: 'underline' }}>
+						<Text color="$blue10" fontWeight="600">
 							Sign up
 						</Text>
 					</Link>

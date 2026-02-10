@@ -1,8 +1,6 @@
 import { Link, router } from "expo-router";
 import {
-	Anchor,
 	Button,
-	Card,
 	Input,
 	Paragraph,
 	Text,
@@ -64,74 +62,56 @@ export default function RegisterScreen() {
 	};
 
 	return (
-		<SafeView>
-			<YStack gap="$4" p="$4">
-				<Text fontSize="$10" fontWeight="bold" color="$color">
+		<SafeView flex={1}>
+			<YStack style={{ flex: 1, justifyContent: "center" }} bg="$background" p="$4" gap="$4">
+				<Text fontSize="$8" fontWeight="bold">
 					Create Account
 				</Text>
-				<Paragraph>Join Swifty Proteins</Paragraph>
+				<Paragraph>
+					Join Swifty Proteins
+				</Paragraph>
 
-				<Card width="100%">
-					<Card.Header>
-						<Text>Sign Up</Text>
-					</Card.Header>
-					<YStack gap="$4">
-						<YStack gap="$2">
-							<Text color="$color">Name</Text>
-							<Input
-								placeholder="Your name"
-								autoCapitalize="words"
-								value={name}
-								onChangeText={setName}
-							/>
-						</YStack>
+				<Input
+					placeholder="Name"
+					autoCapitalize="words"
+					value={name}
+					onChangeText={setName}
+				/>
 
-						<YStack gap="$2">
-							<Text color="$color">Email</Text>
-							<Input
-								placeholder="your@email.com"
-								autoCapitalize="none"
-								keyboardType="email-address"
-								value={email}
-								onChangeText={setEmail}
-							/>
-						</YStack>
+				<Input
+					placeholder="Email"
+					autoCapitalize="none"
+					keyboardType="email-address"
+					value={email}
+					onChangeText={setEmail}
+				/>
 
-						<YStack gap="$2">
-							<Text color="$color">Password</Text>
-							<Input
-								placeholder="••••••••"
-								secureTextEntry
-								value={password}
-								onChangeText={setPassword}
-							/>
-						</YStack>
+				<Input
+					placeholder="Password"
+					secureTextEntry
+					value={password}
+					onChangeText={setPassword}
+				/>
 
-						<YStack gap="$2">
-							<Text color="$color">Confirm Password</Text>
-							<Input
-								placeholder="••••••••"
-								secureTextEntry
-								value={confirmPassword}
-								onChangeText={setConfirmPassword}
-							/>
-						</YStack>
+				<Input
+					placeholder="Confirm Password"
+					secureTextEntry
+					value={confirmPassword}
+					onChangeText={setConfirmPassword}
+				/>
 
-						<YStack gap="$2">
-							<Button
-								onPress={handleRegister}
-								disabled={registerMutation.isPending}
-							>
-								{registerMutation.isPending ? "Creating Account..." : "Sign Up"}
-							</Button>
-						</YStack>
-					</YStack>
-				</Card>
+				<Button
+					onPress={handleRegister}
+					disabled={registerMutation.isPending}
+					opacity={registerMutation.isPending ? 0.5 : 1}
+				>
+					{registerMutation.isPending ? "Creating Account..." : "Sign Up"}
+				</Button>
 
-				<XStack gap="$2">
-					<Paragraph>Already have an account?</Paragraph>
+				<XStack style={{ justifyContent: "center" }} gap="$2">
+					<Text>Already have an account?</Text>
 					<Link href="/login" asChild>
-						<Text color="$blue10" style={{ textDecorationLine: 'underline' }}>
+						<Text color="$blue10" fontWeight="600">
 							Sign in
 						</Text>
 					</Link>
