@@ -13,11 +13,12 @@ import {
 } from "tamagui";
 import { SafeView } from "@/components/safe-view";
 import { fetchLigandFile } from "@/lib/ligands";
+import { parseSdfFile, type MoleculeData } from "@/lib/sdf-parser";
 
 export default function ProteinScreen() {
 	const { id } = useLocalSearchParams<{ id?: string }>();
 	const [isLoading, setIsLoading] = useState(true);
-	const [ligandData, setLigandData] = useState<string | null>(null);
+	const [molecule, setMolecule] = useState<MoleculeData | null>(null);
 
 	useEffect(() => {
 		if (!id) {
@@ -33,8 +34,9 @@ export default function ProteinScreen() {
 	const loadLigandData = async (ligandId: string) => {
 		setIsLoading(true);
 		try {
-			const data = await fetchLigandFile(ligandId);
-			setLigandData(data);
+			const sdfContent = await fetchLigandFile(ligandId);
+			const moleculeData = parseSdfFile(sdfContent);
+			setMolecule(moleculeData);
 		} catch (error) {
 			Alert.alert(
 				"Loading Failed",
@@ -75,15 +77,19 @@ export default function ProteinScreen() {
 					bg="$backgroundHover"
 					style={{ justifyContent: "center", alignItems: "center" }}
 				>
-					<YStack alignItems="center" gap="$2">
-						<Text fontSize="$12" color="$color10">
-							🧬
-						</Text>
-						<Text color="$color10">3D Visualization</Text>
-						<Paragraph size="$1" textAlign="center">
-							3D protein model will be displayed here
-						</Paragraph>
-					</YStack>
+					{molecule ? (
+						<YStack style={{ alignItems: "center" }} gap="$2">
+							<Text fontSize="$12" color="$color10">
+								🧬
+							</Text>
+							<Text color="$color10">3D Visualization</Text>
+							<Paragraph size="$1" style={{ textAlign: "center" }}>
+								{molecule.atoms.length} atoms, {molecule.bonds.length} bonds
+							</Paragraph>
+						</YStack>
+					) : (
+						<Text color="$color10">No data</Text>
+					)}
 				</Card>
 
 				<Separator />
