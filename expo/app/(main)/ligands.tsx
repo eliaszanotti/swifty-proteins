@@ -4,10 +4,10 @@ import {
     Button,
     Paragraph,
     Text,
-    XStack,
     YStack,
     Input,
     ScrollView,
+    Spinner,
 } from "tamagui";
 import { SafeView } from "@/components/safe-view";
 import { loadLigands, type Ligand } from "@/lib/ligands";
@@ -58,8 +58,9 @@ export default function LigandsScreen() {
                 </YStack>
 
                 {isLoading ? (
-                    <YStack flex={1} justifyContent="center" alignItems="center">
-                        <Text>Loading ligands...</Text>
+                    <YStack style={{ flex: 1, justifyContent: "center", alignItems: "center" }} gap="$3">
+                        <Spinner size="large" color="$gray10" />
+                        <Text color="$color10">Loading ligands...</Text>
                     </YStack>
                 ) : (
                     <ScrollView flex={1} px="$4">
