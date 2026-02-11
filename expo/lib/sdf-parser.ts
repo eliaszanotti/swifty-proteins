@@ -38,24 +38,52 @@ export function parseSdfFile(sdfContent: string): MoleculeData {
     const atoms: Atom[] = [];
     for (let i = 0; i < atomCount; i++) {
         const line = lines[4 + i];
-        if (!line) continue;
-
-        const atom = parseAtomLine(line, i + 1);
-        if (atom) {
-            atoms.push(atom);
+        if (!line) {
+            throw new Error(`Invalid SDF file: missing atom line at index ${i}`);
         }
+        const atom = parseAtomLine(line, i + 1);
+        if (!atom) {
+            throw new Error(`Invalid SDF file: could not parse atom at index ${i}`);
+        }
+        atoms.push(atom);
+    }
+    if (atoms.length !== atomCount) {
+        throw new Error(
+            `Invalid SDF file: parsed atom count (${atoms.length}) does not match counts line (${atomCount})`
+        );
     }
 
     const bonds: Bond[] = [];
     const bondStartLine = 4 + atomCount;
     for (let i = 0; i < bondCount; i++) {
         const line = lines[bondStartLine + i];
-        if (!line) continue;
-
-        const bond = parseBondLine(line);
-        if (bond) {
-            bonds.push(bond);
+        if (!line) {
+            throw new Error(
+                `Invalid SDF file: missing bond line at index ${i} (expected ${bondCount} bonds)`
+            );
         }
+        const bond = parseBondLine(line);
+        if (!bond) {
+            throw new Error(
+                `Invalid SDF file: could not parse bond line at index ${i}`
+            );
+        }
+        if (
+            bond.atom1 < 1 ||
+            bond.atom1 > atomCount ||
+            bond.atom2 < 1 ||
+            bond.atom2 > atomCount
+        ) {
+            throw new Error(
+                `Invalid SDF file: bond references non-existent atom index (atom1: ${bond.atom1}, atom2: ${bond.atom2}, max: ${atomCount})`
+            );
+        }
+        bonds.push(bond);
+    }
+    if (bonds.length !== bondCount) {
+        throw new Error(
+            `Invalid SDF file: bond count mismatch (expected ${bondCount}, parsed ${bonds.length})`
+        );
     }
 
     return { name, atoms, bonds };

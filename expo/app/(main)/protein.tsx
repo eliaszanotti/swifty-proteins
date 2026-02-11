@@ -53,7 +53,9 @@ export default function ProteinScreen() {
 			<SafeView flex={1}>
 				<YStack flex={1} bg="$background" style={{ justifyContent: "center", alignItems: "center" }} gap="$3">
 					<Spinner size="large" color="$gray10" />
-					<Text color="$color10">Loading ligand {id}...</Text>
+					<Text color="$color10">
+						{id ? `Loading ligand ${id}...` : "Loading ligand..."}
+					</Text>
 				</YStack>
 			</SafeView>
 		);
