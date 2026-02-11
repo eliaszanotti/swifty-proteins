@@ -28,13 +28,13 @@ export async function loadLigands(): Promise<Ligand[]> {
     }
 }
 
-export async function fetchPdbFile(ligandId: string): Promise<string> {
-    const url = `https://files.rcsb.org/download/${ligandId}.pdb`;
+export async function fetchLigandFile(ligandId: string): Promise<string> {
+    const url = `https://files.rcsb.org/ligands/download/${ligandId}_ideal.sdf`;
 
     const response = await fetch(url);
 
     if (!response.ok) {
-        throw new Error(`Failed to fetch PDB file for ${ligandId}`);
+        throw new Error(`Failed to fetch ligand file for ${ligandId}`);
     }
 
     return await response.text();
