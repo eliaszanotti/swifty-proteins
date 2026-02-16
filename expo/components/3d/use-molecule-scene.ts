@@ -47,7 +47,7 @@ export function setupMoleculeScene({
     const rotationY: { current: number } = { current: 0 };
     const cameraDistance: { current: number } = { current: 15 };
 
-    // Debug log counter (log every 60 frames to avoid spam)
+    // Log counter
     let frameCount = 0;
 
     const renderer = new Renderer({ gl });
@@ -68,9 +68,6 @@ export function setupMoleculeScene({
     targetCameraDistance.value = distance;
     cameraDistance.current = distance;
 
-    console.log("[Scene] Setup complete - initial distance:", distance);
-    console.log("[Scene] Molecule has", molecule.atoms.length, "atoms and", molecule.bonds.length, "bonds");
-
     camera.position.set(0, 0, distance);
     camera.lookAt(0, 0, 0);
     cameraRef.current = camera;
@@ -88,7 +85,6 @@ export function setupMoleculeScene({
     scene.add(backLight);
 
     // Create atom meshes
-    console.log("[Scene] Creating atom meshes...");
     for (const atom of molecule.atoms) {
         const geometry = createAtomGeometry(atom.symbol);
         const material = createAtomMaterial(getCpkColor(atom.symbol));
@@ -101,7 +97,6 @@ export function setupMoleculeScene({
         mesh.userData = { atom };
         scene.add(mesh);
     }
-    console.log("[Scene] Atom meshes created, adding to scene...");
 
     // Create bond meshes
     const bondMeshes = createAllBondMeshes(molecule.atoms, molecule.bonds);
@@ -110,15 +105,14 @@ export function setupMoleculeScene({
         scene.add(bondMesh);
     }
 
-    console.log("[Scene] Created", molecule.atoms.length, "atoms and", molecule.bonds.length, "bonds");
-    console.log("[Scene] Scene children count:", scene.children.length);
-    console.log("[Scene] Camera initial position:", camera.position.toArray());
+    console.log(`[3D] Scene ready: ${molecule.atoms.length} atoms, ${molecule.bonds.length} bonds`);
 
     // Start animation loop
     const render = () => {
-        // Log debug info every 60 frames
         frameCount++;
-        if (frameCount % 60 === 0) {
+
+        // Log every 30 frames
+        if (frameCount % 30 === 0) {
             console.log("[Render] Frame", frameCount);
             console.log("[Render] - targetRotation:", targetRotationX.value.toFixed(2), targetRotationY.value.toFixed(2));
             console.log("[Render] - currentRotation:", rotationX.current.toFixed(2), rotationY.current.toFixed(2));
@@ -164,7 +158,7 @@ export function setupMoleculeScene({
 
     // Cleanup function to dispose resources
     const cleanup = () => {
-        console.log("[Scene] Cleaning up resources...");
+        console.log("[3D] Cleanup");
 
         // Cancel animation frame
         if (animationFrameRef.current !== null) {
@@ -189,9 +183,8 @@ export function setupMoleculeScene({
         // Dispose renderer
         rendererRef.current?.dispose();
         rendererRef.current = null;
-
-        console.log("[Scene] Cleanup complete");
     };
+
     return {
         rendererRef,
         sceneRef,

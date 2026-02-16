@@ -82,11 +82,8 @@ function Molecule3DViewInner({
 
 	// Scene setup callback - called when GLView context is created
 	const onContextCreate = (gl: ExpoWebGLRenderingContext) => {
-		console.log("[View] onContextCreate called for molecule:", molecule.name);
-
 		// Clean up any previous scene (shouldn't happen with key prop, but just in case)
 		if (cleanupRef.current) {
-			console.log("[View] Cleaning up previous scene");
 			cleanupRef.current();
 			cleanupRef.current = null;
 		}
@@ -107,15 +104,12 @@ function Molecule3DViewInner({
 		cameraRef.current = sceneRefs.cameraRef.current;
 		animationFrameRef.current = sceneRefs.animationFrameRef.current;
 		cleanupRef.current = sceneRefs.cleanup;
-
-		console.log("[View] Scene setup complete - scene:", !!sceneRef.current, "camera:", !!cameraRef.current);
 	};
 
 	// Cleanup on unmount
 	useEffect(() => {
 		return () => {
 			if (cleanupRef.current) {
-				console.log("[View] Component unmounting - cleaning up scene");
 				cleanupRef.current();
 			}
 		};
@@ -125,10 +119,8 @@ function Molecule3DViewInner({
 	const handleTap = (x: number, y: number) => {
 		const scene = sceneRef.current;
 		const camera = cameraRef.current;
-		console.log("[Gesture] Tap - scene:", !!scene, "camera:", !!camera);
 
 		if (!camera || !scene) {
-			console.log("[Gesture] No camera or scene ref - ignoring tap");
 			return;
 		}
 
@@ -153,7 +145,7 @@ function Molecule3DViewInner({
 	const panGesture = Gesture.Pan()
 		.onStart(() => {
 			"worklet";
-			console.log("[Gesture] Pan started");
+			console.log("[Gesture] Pan");
 		})
 		.onUpdate((event: any) => {
 			"worklet";
@@ -166,13 +158,7 @@ function Molecule3DViewInner({
 					-Math.PI / 2 + 0.1,
 					Math.min(Math.PI / 2 - 0.1, targetRotationX.value),
 				);
-
-				console.log("[Gesture] Pan - rotation:", targetRotationX.value.toFixed(2), targetRotationY.value.toFixed(2));
 			}
-		})
-		.onEnd(() => {
-			"worklet";
-			console.log("[Gesture] Pan ended");
 		});
 
 	// Pinch gesture for zoom
@@ -180,25 +166,19 @@ function Molecule3DViewInner({
 		.onStart(() => {
 			"worklet";
 			baseCameraDistance.value = targetCameraDistance.value;
-			console.log("[Gesture] Pinch started - base distance:", baseCameraDistance.value.toFixed(2));
+			console.log("[Gesture] Pinch");
 		})
 		.onUpdate((event: any) => {
 			"worklet";
 			if (event.scale !== undefined && !isNaN(event.scale)) {
 				const newDistance = baseCameraDistance.value / event.scale;
 				targetCameraDistance.value = Math.max(2, Math.min(200, newDistance));
-				console.log("[Gesture] Pinch - scale:", event.scale.toFixed(2), "new distance:", targetCameraDistance.value.toFixed(2));
 			}
-		})
-		.onEnd(() => {
-			"worklet";
-			console.log("[Gesture] Pinch ended");
 		});
 
 	// Tap gesture for atom selection
 	const tapGesture = Gesture.Tap().onEnd((event: any) => {
 		"worklet";
-		console.log("[Gesture] Tap detected at:", event.absoluteX, event.absoluteY);
 		runOnJS(handleTap)(event.absoluteX, event.absoluteY);
 	});
 
