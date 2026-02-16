@@ -53,8 +53,6 @@ export function setupMoleculeScene({
 	const rotationX = targetRotationX;
 	const rotationY = targetRotationY;
 
-	// Log counter
-	let frameCount = 0;
 	let animationFrameId: number;
 
 	const renderer = new Renderer({ gl });
@@ -111,19 +109,8 @@ export function setupMoleculeScene({
 		scene.add(bondMesh);
 	}
 
-	console.log(
-		`[3D] Scene ready: ${molecule.atoms.length} atoms, ${molecule.bonds.length} bonds`,
-	);
-
 	// Start animation loop
 	const render = () => {
-		frameCount++;
-
-		// Log every 30 frames
-		if (frameCount % 60 === 0) {
-			console.log("[Render] Frame", frameCount);
-		}
-
 		// Clamp camera distance directly
 		const dist = Math.max(2, Math.min(200, targetCameraDistance.value));
 
@@ -144,8 +131,6 @@ export function setupMoleculeScene({
 
 	// Cleanup function to dispose resources
 	const cleanup = () => {
-		console.log("[3D] Cleanup");
-
 		// Cancel animation frame
 		cancelAnimationFrame(animationFrameId);
 
