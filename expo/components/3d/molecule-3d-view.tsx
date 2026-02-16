@@ -149,9 +149,9 @@ function Molecule3DViewInner({
 		})
 		.onUpdate((event: any) => {
 			"worklet";
-			if (event.changeX !== undefined && event.changeY !== undefined) {
-				targetRotationY.value -= event.changeX * 0.005;
-				targetRotationX.value += event.changeY * 0.005;
+			if (event.translationX !== undefined && event.translationY !== undefined) {
+				targetRotationY.value -= event.translationX * 0.005;
+				targetRotationX.value += event.translationY * 0.005;
 
 				// Clamp vertical rotation
 				targetRotationX.value = Math.max(

@@ -123,7 +123,7 @@ export function setupMoleculeScene({
 		frameCount++;
 
 		// Log every 30 frames
-		if (frameCount % 30 === 0) {
+		if (frameCount % 60 === 0) {
 			console.log("[Render] Frame", frameCount);
 		}
 
