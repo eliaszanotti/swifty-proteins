@@ -97,7 +97,7 @@ const ATOM_RADII: Record<string, number> = {
  * Scale factor to make atoms more visible in the 3D view
  * Covalent radii are too small for good visualization
  */
-const VISIBILITY_SCALE = 2.5;
+const VISIBILITY_SCALE = 1.0;
 
 /**
  * Get the radius for an atom based on its element symbol
