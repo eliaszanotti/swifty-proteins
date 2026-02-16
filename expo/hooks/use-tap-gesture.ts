@@ -39,6 +39,6 @@ export function useTapGesture(
 
 	return Gesture.Tap().onEnd((event: any) => {
 		"worklet";
-		runOnJS(handleTap)(event.absoluteX, event.absoluteY);
+		runOnJS(handleTap)(event.x, event.y);
 	});
 }
