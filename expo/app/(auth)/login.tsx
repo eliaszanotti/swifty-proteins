@@ -126,7 +126,7 @@ export default function LoginScreen() {
 				</YStack>
 
 				<XStack style={{ justifyContent: "center" }} gap="$2">
-					<Text>Don't have an account?</Text>
+					<Text>Don&apos;t have an account?</Text>
 					<Link href="/register" asChild>
 						<Text color="$blue10" fontWeight="600">
 							Sign up
