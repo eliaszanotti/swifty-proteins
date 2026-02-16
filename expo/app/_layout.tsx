@@ -5,6 +5,7 @@ import { useFonts } from "expo-font";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";
 import "react-native-reanimated";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 import { TamaguiProvider } from "tamagui";
 import { tamaguiConfig } from "@/lib/tamagui.config";
@@ -51,20 +52,22 @@ export default function RootLayout() {
 	}
 
 	return (
-		<TRPCProvider>
-			<TamaguiProvider config={tamaguiConfig} defaultTheme="dark">
-				<ThemeProvider value={DarkTheme}>
-					<Stack
-						screenOptions={{
-							headerShown: false,
-							contentStyle: { backgroundColor: "#000000" },
-						}}
-					>
-						<Stack.Screen name="index" />
-					</Stack>
-					<StatusBar style="light" />
-				</ThemeProvider>
-			</TamaguiProvider>
-		</TRPCProvider>
+		<GestureHandlerRootView style={{ flex: 1 }}>
+			<TRPCProvider>
+				<TamaguiProvider config={tamaguiConfig} defaultTheme="dark">
+					<ThemeProvider value={DarkTheme}>
+						<Stack
+							screenOptions={{
+								headerShown: false,
+								contentStyle: { backgroundColor: "#000000" },
+							}}
+						>
+							<Stack.Screen name="index" />
+						</Stack>
+						<StatusBar style="light" />
+					</ThemeProvider>
+				</TamaguiProvider>
+			</TRPCProvider>
+		</GestureHandlerRootView>
 	);
 }
