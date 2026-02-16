@@ -1,28 +1,26 @@
 import { Gesture } from "react-native-gesture-handler";
 import { useSharedValue, runOnJS } from "react-native-reanimated";
-import { useEffect } from "react";
-import { use3DStore } from "@/stores/use-3d-store";
+import type { MoleculeScene } from "@/lib/3d/MoleculeScene";
 
-export function usePinchGesture() {
-	const { cameraDistance, setDistance } = use3DStore();
-	// Synchronize zustand value with SharedValue for worklet access
-	const dist = useSharedValue(cameraDistance);
-	const baseDistance = useSharedValue(cameraDistance);
+export function usePinchGesture(sceneRef: React.RefObject<MoleculeScene | null>) {
+	const baseDistance = useSharedValue(0);
 
-	useEffect(() => {
-		dist.value = cameraDistance;
-	}, [cameraDistance, dist]);
+	const handleZoom = (scale: number) => {
+		if (sceneRef.current) {
+			const newDistance = 15 / scale;
+			sceneRef.current.setDistance(Math.max(2, Math.min(200, newDistance)));
+		}
+	};
 
 	return Gesture.Pinch()
 		.onStart(() => {
-			"worklet";
-			baseDistance.value = dist.value;
+			"useWorklet";
+			baseDistance.value = 0;
 		})
 		.onUpdate((event: any) => {
-			"worklet";
+			"useWorklet";
 			if (event.scale !== undefined && !isNaN(event.scale)) {
-				const newDistance = baseDistance.value / event.scale;
-				runOnJS(setDistance)(Math.max(2, Math.min(200, newDistance)));
+				runOnJS(handleZoom)(event.scale);
 			}
 		});
 }

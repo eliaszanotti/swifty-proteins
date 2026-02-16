@@ -26,8 +26,9 @@ export function Molecule3DViewInner({
     const [gl, setGl] = useState<ExpoWebGLRenderingContext | null>(null);
     const sceneRef = use3DScene(gl, molecule, width, height);
 
-    const panGesture = usePanGesture();
-    const pinchGesture = usePinchGesture();
+    // Pass sceneRef to gesture hooks
+    const panGesture = usePanGesture(sceneRef);
+    const pinchGesture = usePinchGesture(sceneRef);
     const tapGesture = useTapGesture(
         sceneRef,
         width,

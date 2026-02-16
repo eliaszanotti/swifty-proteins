@@ -12,12 +12,10 @@ import {
     calculateMoleculeCenter,
     calculateOptimalCameraDistance,
 } from './bond-geometries';
-import { use3DStore } from '@/stores/use-3d-store';
 
 /**
  * MoleculeScene encapsulates all Three.js logic for rendering a molecule.
- * It manages the scene, camera, renderer, and animation loop independently
- * from React, allowing for clean separation of concerns.
+ * It manages the scene, camera, renderer, animation loop, and camera controls.
  */
 export class MoleculeScene {
     private renderer: Renderer | null = null;
@@ -27,7 +25,13 @@ export class MoleculeScene {
     private width: number;
     private height: number;
     private animationFrameId: number | null = null;
-    private initialCameraDistance: number;
+
+    // Camera state managed internally
+    private rotationX: number = 0;
+    private rotationY: number = 0;
+    private cameraDistance: number = 15;
+    private minDistance: number = 2;
+    private maxDistance: number = 200;
 
     constructor(
         gl: ExpoWebGLRenderingContext,
@@ -38,7 +42,7 @@ export class MoleculeScene {
         this.gl = gl;
         this.width = width;
         this.height = height;
-        this.initialCameraDistance = this.setupScene(gl, molecule, width, height);
+        this.setupScene(gl, molecule, width, height);
     }
 
     /**
@@ -49,7 +53,7 @@ export class MoleculeScene {
         molecule: MoleculeData,
         width: number,
         height: number
-    ): number {
+    ): void {
         // Create renderer
         this.renderer = new Renderer({ gl });
 
@@ -62,9 +66,8 @@ export class MoleculeScene {
         const center = calculateMoleculeCenter(molecule.atoms);
         const distance = calculateOptimalCameraDistance(molecule.atoms);
 
-        // Initialize the store with the optimal distance
-        use3DStore.getState().setDistance(distance);
-
+        // Initialize camera state
+        this.cameraDistance = distance;
         this.camera.position.set(0, 0, distance);
         this.camera.lookAt(0, 0, 0);
 
@@ -100,27 +103,55 @@ export class MoleculeScene {
             bondMesh.position.sub(center);
             this.scene.add(bondMesh);
         }
-
-        return distance;
     }
 
     /**
-     * Update camera position based on rotation and distance from store
+     * Rotate the camera by the given delta values.
+     * Called from gesture handlers.
+     */
+    public rotate(deltaX: number, deltaY: number): void {
+        this.rotationY -= deltaX * 0.02;
+        this.rotationX += deltaY * 0.02;
+
+        // Clamp vertical rotation
+        this.rotationX = Math.max(
+            -Math.PI / 2 + 0.1,
+            Math.min(Math.PI / 2 - 0.1, this.rotationX)
+        );
+    }
+
+    /**
+     * Set the camera distance.
+     * Called from gesture handlers.
+     */
+    public setDistance(distance: number): void {
+        this.cameraDistance = Math.max(
+            this.minDistance,
+            Math.min(this.maxDistance, distance)
+        );
+    }
+
+    /**
+     * Reset camera to initial position.
+     */
+    public resetCamera(): void {
+        this.rotationX = 0;
+        this.rotationY = 0;
+        this.cameraDistance = 15;
+    }
+
+    /**
+     * Update camera position based on rotation and distance
      */
     private updateCamera(): void {
         if (!this.camera) return;
 
-        const { rotationX, rotationY, cameraDistance } = use3DStore.getState();
-
-        // Clamp camera distance
-        const dist = Math.max(2, Math.min(200, cameraDistance));
-
         // Update camera position based on rotation
         this.camera.position.x =
-            dist * Math.sin(rotationY) * Math.cos(rotationX);
-        this.camera.position.y = dist * Math.sin(rotationX);
+            this.cameraDistance * Math.sin(this.rotationY) * Math.cos(this.rotationX);
+        this.camera.position.y = this.cameraDistance * Math.sin(this.rotationX);
         this.camera.position.z =
-            dist * Math.cos(rotationY) * Math.cos(rotationX);
+            this.cameraDistance * Math.cos(this.rotationY) * Math.cos(this.rotationX);
         this.camera.lookAt(0, 0, 0);
     }
 
