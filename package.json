@@ -10,6 +10,7 @@
         "dev:expo": "pnpm --filter expo start",
         "build": "pnpm --filter \"./**\" build",
         "lint": "pnpm --filter \"./**\" lint",
+        "tsc": "pnpm --filter \"./**\" tsc --noEmit",
         "knip": "knip",
         "prepare": "husky"
     },
