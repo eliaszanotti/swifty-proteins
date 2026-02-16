@@ -1,22 +1,12 @@
-import { useRef, useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useRef } from "react";
 import { View, StyleSheet, DimensionValue } from "react-native";
 import { GLView, ExpoWebGLRenderingContext } from "expo-gl";
-import { Renderer } from "expo-three";
-import * as THREE from "three";
 import { GestureDetector, Gesture } from "react-native-gesture-handler";
 import { useSharedValue, runOnJS } from "react-native-reanimated";
 import type { Atom, MoleculeData } from "@/lib/sdf-parser";
-import {
-	createAtomGeometry,
-	createAtomMaterial,
-} from "@/lib/3d/atom-geometries";
-import { getCpkColor } from "@/lib/3d/cpk-colors";
-import {
-	createAllBondMeshes,
-	calculateMoleculeCenter,
-	calculateOptimalCameraDistance,
-} from "@/lib/3d/bond-geometries";
+import { setupMoleculeScene } from "./use-molecule-scene";
 import { findAtomAtScreenPoint } from "@/lib/3d/raycasting";
+import * as THREE from "three";
 
 interface Molecule3DViewProps {
 	molecule: MoleculeData;
@@ -40,7 +30,6 @@ export function Molecule3DView({
 		height: number;
 	} | null>(null);
 
-	// Handle layout to get actual pixel dimensions
 	const handleLayout = (event: any) => {
 		const { width, height } = event.nativeEvent.layout;
 		setDimensions({ width, height });
@@ -76,196 +65,122 @@ function Molecule3DViewInner({
 	width,
 	height,
 }: Molecule3DViewInnerProps) {
-	const rendererRef = useRef<Renderer | null>(null);
+	// Shared values for gesture control
+	const targetRotationX = useSharedValue(0);
+	const targetRotationY = useSharedValue(0);
+	const targetCameraDistance = useSharedValue(15);
+	const baseCameraDistance = useSharedValue(15);
+
+	// Use useRef for scene and camera so they can be updated and accessed by callbacks
 	const sceneRef = useRef<THREE.Scene | null>(null);
 	const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
 	const animationFrameRef = useRef<number | null>(null);
 
-	// Current render values (read in render loop)
-	const rotationX = useRef(0);
-	const rotationY = useRef(0);
-	const cameraDistance = useRef(15);
+	// Scene setup callback
+	const onContextCreate = (gl: ExpoWebGLRenderingContext) => {
+		console.log("[View] onContextCreate called");
+		const sceneRefs = setupMoleculeScene({
+			gl,
+			molecule,
+			width,
+			height,
+			targetRotationX,
+			targetRotationY,
+			targetCameraDistance,
+			baseCameraDistance,
+		});
 
-	// Gesture target values (set by gestures, read by render loop)
-	const targetRotationX = useSharedValue(0);
-	const targetRotationY = useSharedValue(0);
-	const targetCameraDistance = useSharedValue(15);
+		// Update refs
+		sceneRef.current = sceneRefs.sceneRef.current;
+		cameraRef.current = sceneRefs.cameraRef.current;
+		animationFrameRef.current = sceneRefs.animationFrameRef.current;
 
-	// Base distance for pinch gesture (also shared for worklet access)
-	const baseCameraDistance = useSharedValue(15);
+		console.log("[View] Refs updated - scene exists:", !!sceneRef.current, "camera exists:", !!cameraRef.current);
+	};
 
-	// Function to handle tap (runs on JS thread) - memoized with useCallback
-	const handleTap = useCallback((x: number, y: number) => {
-		if (!cameraRef.current || !sceneRef.current) return;
+	// Tap handler - accesses refs via useRef so it always gets current values
+	const handleTap = (x: number, y: number) => {
+		const scene = sceneRef.current;
+		const camera = cameraRef.current;
+		console.log("[Gesture] Tap - scene:", !!scene, "camera:", !!camera);
+
+		if (!camera || !scene) {
+			console.log("[Gesture] No camera or scene ref - ignoring tap");
+			return;
+		}
 
 		const result = findAtomAtScreenPoint(
 			x,
 			y,
 			width,
 			height,
-			cameraRef.current,
-			sceneRef.current,
+			camera,
+			scene,
 		);
 
 		if (result && onAtomSelect) {
+			console.log("[Gesture] Atom selected:", result.atom.symbol);
 			onAtomSelect(result.atom);
 		} else if (onDismissTooltip) {
 			onDismissTooltip();
 		}
-	}, [width, height, onAtomSelect, onDismissTooltip]);
-
-	// Initialize Three.js scene
-	const onContextCreate = (gl: ExpoWebGLRenderingContext) => {
-		const renderer = new Renderer({ gl });
-		rendererRef.current = renderer;
-
-		// Create scene
-		const scene = new THREE.Scene();
-		scene.background = new THREE.Color(0x000000);
-		sceneRef.current = scene;
-
-		// Create camera
-		const camera = new THREE.PerspectiveCamera(
-			75,
-			width / height,
-			0.1,
-			1000,
-		);
-		const center = calculateMoleculeCenter(molecule.atoms);
-		const distance = calculateOptimalCameraDistance(molecule.atoms);
-
-		// Initialize all values
-		baseCameraDistance.value = distance;
-		targetCameraDistance.value = distance;
-		cameraDistance.current = distance;
-
-		camera.position.set(0, 0, distance);
-		camera.lookAt(0, 0, 0);
-		cameraRef.current = camera;
-
-		// Add lights
-		const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
-		scene.add(ambientLight);
-
-		const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
-		directionalLight.position.set(10, 10, 10);
-		scene.add(directionalLight);
-
-		const backLight = new THREE.DirectionalLight(0xffffff, 0.3);
-		backLight.position.set(-10, -10, -10);
-		scene.add(backLight);
-
-		// Create atom meshes
-		for (const atom of molecule.atoms) {
-			const geometry = createAtomGeometry(atom.symbol);
-			const material = createAtomMaterial(getCpkColor(atom.symbol));
-			const mesh = new THREE.Mesh(geometry, material);
-			mesh.position.set(
-				atom.x - center.x,
-				atom.y - center.y,
-				atom.z - center.z,
-			);
-			mesh.userData = { atom };
-			scene.add(mesh);
-		}
-
-		// Create bond meshes
-		const bondMeshes = createAllBondMeshes(molecule.atoms, molecule.bonds);
-		for (const bondMesh of bondMeshes) {
-			bondMesh.position.sub(center);
-			scene.add(bondMesh);
-		}
-
-		// Start animation loop
-		const render = () => {
-			// Smooth rotation interpolation
-			rotationX.current +=
-				(targetRotationX.value - rotationX.current) * 0.1;
-			rotationY.current +=
-				(targetRotationY.value - rotationY.current) * 0.1;
-
-			// Smooth zoom interpolation
-			cameraDistance.current +=
-				(targetCameraDistance.value - cameraDistance.current) * 0.1;
-
-			// Clamp camera distance to prevent it from going too far or too close
-			cameraDistance.current = Math.max(
-				2,
-				Math.min(200, cameraDistance.current),
-			);
-
-			// Update camera position based on rotation
-			const dist = cameraDistance.current;
-			camera.position.x =
-				dist *
-				Math.sin(rotationY.current) *
-				Math.cos(rotationX.current);
-			camera.position.y = dist * Math.sin(rotationX.current);
-			camera.position.z =
-				dist *
-				Math.cos(rotationY.current) *
-				Math.cos(rotationX.current);
-			camera.lookAt(0, 0, 0);
-
-			(renderer as any).render(scene, camera);
-			gl.endFrameEXP();
-
-			animationFrameRef.current = requestAnimationFrame(render);
-		};
-		render();
 	};
 
-	// Cleanup on unmount
-	useEffect(() => {
-		return () => {
-			if (animationFrameRef.current) {
-				cancelAnimationFrame(animationFrameRef.current);
+	// Pan gesture for rotation
+	const panGesture = Gesture.Pan()
+		.onStart(() => {
+			"worklet";
+			console.log("[Gesture] Pan started");
+		})
+		.onUpdate((event: any) => {
+			"worklet";
+			if (event.translationX !== undefined && event.translationY !== undefined) {
+				targetRotationY.value += event.translationX * 0.01;
+				targetRotationX.value -= event.translationY * 0.01;
+
+				// Clamp vertical rotation
+				targetRotationX.value = Math.max(
+					-Math.PI / 2 + 0.1,
+					Math.min(Math.PI / 2 - 0.1, targetRotationX.value),
+				);
+
+				console.log("[Gesture] Pan - rotation:", targetRotationX.value.toFixed(2), targetRotationY.value.toFixed(2));
 			}
-		};
-	}, []);
-
-	// Create gestures with useMemo to avoid recreation
-	// Note: SharedValues (targetRotationX, targetRotationY, targetCameraDistance, baseCameraDistance)
-	// are stable references and don't need to be in dependencies
-	const gestures = useMemo(() => {
-		// Pan gesture for rotation
-		const panGesture = Gesture.Pan().onUpdate((event: any) => {
+		})
+		.onEnd(() => {
 			"worklet";
-			targetRotationY.value += event.changeX * 0.01;
-			targetRotationX.value -= event.changeY * 0.01;
-
-			// Clamp vertical rotation to avoid gimbal lock
-			targetRotationX.value = Math.max(
-				-Math.PI / 2 + 0.1,
-				Math.min(Math.PI / 2 - 0.1, targetRotationX.value),
-			);
+			console.log("[Gesture] Pan ended");
 		});
 
-		// Pinch gesture for zoom - use current target distance as base
-		const pinchGesture = Gesture.Pinch()
-			.onStart(() => {
-				"worklet";
-				// Store the starting distance when pinch begins
-				baseCameraDistance.value = targetCameraDistance.value;
-			})
-			.onUpdate((event: any) => {
-				"worklet";
+	// Pinch gesture for zoom
+	const pinchGesture = Gesture.Pinch()
+		.onStart(() => {
+			"worklet";
+			baseCameraDistance.value = targetCameraDistance.value;
+			console.log("[Gesture] Pinch started - base distance:", baseCameraDistance.value.toFixed(2));
+		})
+		.onUpdate((event: any) => {
+			"worklet";
+			if (event.scale !== undefined && !isNaN(event.scale)) {
 				const newDistance = baseCameraDistance.value / event.scale;
-				// Clamp to prevent extreme values
 				targetCameraDistance.value = Math.max(2, Math.min(200, newDistance));
-			});
-
-		// Tap gesture for atom selection
-		const tapGesture = Gesture.Tap().onEnd((event: any) => {
+				console.log("[Gesture] Pinch - scale:", event.scale.toFixed(2), "new distance:", targetCameraDistance.value.toFixed(2));
+			}
+		})
+		.onEnd(() => {
 			"worklet";
-			runOnJS(handleTap)(event.absoluteX, event.absoluteY);
+			console.log("[Gesture] Pinch ended");
 		});
 
-		return Gesture.Race(
-			Gesture.Simultaneous(panGesture, pinchGesture),
-			tapGesture,
-		);
-	}, [handleTap]);
+	// Tap gesture for atom selection
+	const tapGesture = Gesture.Tap().onEnd((event: any) => {
+		"worklet";
+		console.log("[Gesture] Tap detected at:", event.absoluteX, event.absoluteY);
+		runOnJS(handleTap)(event.absoluteX, event.absoluteY);
+	});
+
+	// Combine gestures
+	const gestures = Gesture.Simultaneous(panGesture, pinchGesture, tapGesture);
 
 	return (
 		<GestureDetector gesture={gestures}>
