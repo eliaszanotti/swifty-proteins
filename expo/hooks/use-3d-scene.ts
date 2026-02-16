@@ -1,7 +1,7 @@
 import { useRef, useEffect } from "react";
 import type { ExpoWebGLRenderingContext } from "expo-gl";
 import type { MoleculeData } from "@/lib/sdf-parser";
-import { MoleculeScene } from "@/lib/3d/MoleculeScene";
+import { MoleculeScene, type DisplayMode } from "@/lib/3d/MoleculeScene";
 
 /**
  * Hook to manage the lifecycle of a MoleculeScene.
@@ -11,6 +11,7 @@ import { MoleculeScene } from "@/lib/3d/MoleculeScene";
  * @param molecule - The molecule data to render
  * @param width - View width in pixels
  * @param height - View height in pixels
+ * @param displayMode - The display mode for visualization
  * @returns A ref containing the current MoleculeScene instance
  */
 export function use3DScene(
@@ -18,6 +19,7 @@ export function use3DScene(
     molecule: MoleculeData | null,
     width: number,
     height: number,
+    displayMode: DisplayMode = 'ball-and-stick',
 ) {
     const sceneRef = useRef<MoleculeScene | null>(null);
 
@@ -25,7 +27,7 @@ export function use3DScene(
         if (!gl || !molecule) return;
 
         // Create and start the new scene
-        const scene = new MoleculeScene(gl, molecule, width, height);
+        const scene = new MoleculeScene(gl, molecule, width, height, displayMode);
         scene.start();
         sceneRef.current = scene;
 
@@ -34,7 +36,7 @@ export function use3DScene(
             scene.dispose();
             sceneRef.current = null;
         };
-    }, [gl, molecule?.name, width, height, molecule]);
+    }, [gl, molecule?.name, width, height, molecule, displayMode]);
 
     return sceneRef;
 }

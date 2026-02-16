@@ -9,12 +9,14 @@ import { AtomTooltip } from "@/components/ui/atom-tooltip";
 import { ShareButton } from "@/components/ui/share-button";
 import { fetchLigandFile } from "@/lib/ligands";
 import { parseSdfFile, type MoleculeData, type Atom } from "@/lib/sdf-parser";
+import type { DisplayMode } from "@/lib/3d/MoleculeScene";
 
 export default function ProteinScreen() {
 	const { id } = useLocalSearchParams<{ id?: string }>();
 	const [isLoading, setIsLoading] = useState(true);
 	const [molecule, setMolecule] = useState<MoleculeData | null>(null);
 	const [selectedAtom, setSelectedAtom] = useState<Atom | null>(null);
+	const [displayMode, setDisplayMode] = useState<DisplayMode>('ball-and-stick');
 
 	useEffect(() => {
 		if (!id) {
@@ -81,6 +83,7 @@ export default function ProteinScreen() {
 							onAtomSelect={handleAtomSelect}
 							onDismissTooltip={handleDismissTooltip}
 							style={styles.moleculeView}
+							displayMode={displayMode}
 						/>
 					) : (
 						<View style={styles.placeholder}>
@@ -108,13 +111,21 @@ export default function ProteinScreen() {
 				</YStack>
 
 				{/* Actions */}
-				<XStack px="$4" pb="$4">
+				<XStack px="$4" pb="$4" gap="$2">
 					{id && (
 						<ShareButton
 							ligandId={id}
 							moleculeName={molecule?.name}
 						/>
 					)}
+					<Button
+						flex={1}
+						onPress={() => setDisplayMode(
+							displayMode === 'ball-and-stick' ? 'space-filling' : 'ball-and-stick'
+						)}
+					>
+						{displayMode === 'ball-and-stick' ? 'Space-Filling' : 'Ball & Stick'}
+					</Button>
 				</XStack>
 			</YStack>
 		</SafeView>

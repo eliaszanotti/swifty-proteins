@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { View, DimensionValue } from "react-native";
 import type { Atom, MoleculeData } from "@/lib/sdf-parser";
+import type { DisplayMode } from "@/lib/3d/MoleculeScene";
 import { Molecule3DViewInner } from "./molecule-3d-view-inner";
 
 interface Molecule3DViewProps {
@@ -10,6 +11,7 @@ interface Molecule3DViewProps {
 	width?: DimensionValue;
 	height?: DimensionValue;
 	style?: any;
+	displayMode?: DisplayMode;
 }
 
 export function Molecule3DView({
@@ -19,6 +21,7 @@ export function Molecule3DView({
 	width = "100%",
 	height = "100%",
 	style,
+	displayMode = 'ball-and-stick',
 }: Molecule3DViewProps) {
 	const [dimensions, setDimensions] = useState<{
 		width: number;
@@ -39,6 +42,7 @@ export function Molecule3DView({
 					onDismissTooltip={onDismissTooltip}
 					width={dimensions.width}
 					height={dimensions.height}
+					displayMode={displayMode}
 				/>
 			)}
 		</View>

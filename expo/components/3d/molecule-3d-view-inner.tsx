@@ -3,6 +3,7 @@ import { StyleSheet } from 'react-native';
 import { GLView, ExpoWebGLRenderingContext } from 'expo-gl';
 import { GestureDetector, Gesture } from 'react-native-gesture-handler';
 import type { Atom, MoleculeData } from '@/lib/sdf-parser';
+import type { DisplayMode } from '@/lib/3d/MoleculeScene';
 import { use3DScene } from '@/hooks/use-3d-scene';
 import { usePanGesture } from '@/hooks/use-pan-gesture';
 import { usePinchGesture } from '@/hooks/use-pinch-gesture';
@@ -14,6 +15,7 @@ interface Molecule3DViewInnerProps {
     onDismissTooltip?: () => void;
     width: number;
     height: number;
+    displayMode?: DisplayMode;
 }
 
 export function Molecule3DViewInner({
@@ -22,9 +24,10 @@ export function Molecule3DViewInner({
     onDismissTooltip,
     width,
     height,
+    displayMode = 'ball-and-stick',
 }: Molecule3DViewInnerProps) {
     const [gl, setGl] = useState<ExpoWebGLRenderingContext | null>(null);
-    const sceneRef = use3DScene(gl, molecule, width, height);
+    const sceneRef = use3DScene(gl, molecule, width, height, displayMode);
 
     // Pass sceneRef to gesture hooks
     const panGesture = usePanGesture(sceneRef);
