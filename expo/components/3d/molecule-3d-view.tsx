@@ -1,10 +1,10 @@
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState, useEffect, useMemo, useCallback } from "react";
 import { View, StyleSheet, DimensionValue } from "react-native";
 import { GLView, ExpoWebGLRenderingContext } from "expo-gl";
 import { Renderer } from "expo-three";
 import * as THREE from "three";
 import { GestureDetector, Gesture } from "react-native-gesture-handler";
-import { useSharedValue } from "react-native-reanimated";
+import { useSharedValue, runOnJS } from "react-native-reanimated";
 import type { Atom, MoleculeData } from "@/lib/sdf-parser";
 import {
 	createAtomGeometry,
@@ -93,6 +93,26 @@ function Molecule3DViewInner({
 
 	// Base distance for pinch gesture (also shared for worklet access)
 	const baseCameraDistance = useSharedValue(15);
+
+	// Function to handle tap (runs on JS thread) - memoized with useCallback
+	const handleTap = useCallback((x: number, y: number) => {
+		if (!cameraRef.current || !sceneRef.current) return;
+
+		const result = findAtomAtScreenPoint(
+			x,
+			y,
+			width,
+			height,
+			cameraRef.current,
+			sceneRef.current,
+		);
+
+		if (result && onAtomSelect) {
+			onAtomSelect(result.atom);
+		} else if (onDismissTooltip) {
+			onDismissTooltip();
+		}
+	}, [width, height, onAtomSelect, onDismissTooltip]);
 
 	// Initialize Three.js scene
 	const onContextCreate = (gl: ExpoWebGLRenderingContext) => {
@@ -204,54 +224,51 @@ function Molecule3DViewInner({
 		};
 	}, []);
 
-	// Pan gesture for rotation
-	const panGesture = Gesture.Pan().onUpdate((event: any) => {
-		"worklet";
-		targetRotationY.value += event.changeX * 0.01;
-		targetRotationX.value -= event.changeY * 0.01;
+	// Create gestures with useMemo to avoid recreation
+	// Note: SharedValues (targetRotationX, targetRotationY, targetCameraDistance, baseCameraDistance)
+	// are stable references and don't need to be in dependencies
+	const gestures = useMemo(() => {
+		// Pan gesture for rotation
+		const panGesture = Gesture.Pan().onUpdate((event: any) => {
+			"worklet";
+			targetRotationY.value += event.changeX * 0.01;
+			targetRotationX.value -= event.changeY * 0.01;
 
-		// Clamp vertical rotation to avoid gimbal lock
-		targetRotationX.value = Math.max(
-			-Math.PI / 2 + 0.1,
-			Math.min(Math.PI / 2 - 0.1, targetRotationX.value),
+			// Clamp vertical rotation to avoid gimbal lock
+			targetRotationX.value = Math.max(
+				-Math.PI / 2 + 0.1,
+				Math.min(Math.PI / 2 - 0.1, targetRotationX.value),
+			);
+		});
+
+		// Pinch gesture for zoom - use current target distance as base
+		const pinchGesture = Gesture.Pinch()
+			.onStart(() => {
+				"worklet";
+				// Store the starting distance when pinch begins
+				baseCameraDistance.value = targetCameraDistance.value;
+			})
+			.onUpdate((event: any) => {
+				"worklet";
+				const newDistance = baseCameraDistance.value / event.scale;
+				// Clamp to prevent extreme values
+				targetCameraDistance.value = Math.max(2, Math.min(200, newDistance));
+			});
+
+		// Tap gesture for atom selection
+		const tapGesture = Gesture.Tap().onEnd((event: any) => {
+			"worklet";
+			runOnJS(handleTap)(event.absoluteX, event.absoluteY);
+		});
+
+		return Gesture.Race(
+			Gesture.Simultaneous(panGesture, pinchGesture),
+			tapGesture,
 		);
-	});
-
-	// Pinch gesture for zoom
-	const pinchGesture = Gesture.Pinch().onUpdate((event: any) => {
-		"worklet";
-		const newDistance = baseCameraDistance.value / event.scale;
-		// Clamp to prevent extreme values
-		targetCameraDistance.value = Math.max(2, Math.min(200, newDistance));
-	});
-
-	// Tap gesture for atom selection
-	const tapGesture = Gesture.Tap().onEnd((event: any) => {
-		if (!cameraRef.current || !sceneRef.current) return;
-
-		const result = findAtomAtScreenPoint(
-			event.absoluteX,
-			event.absoluteY,
-			width,
-			height,
-			cameraRef.current,
-			sceneRef.current,
-		);
-
-		if (result && onAtomSelect) {
-			onAtomSelect(result.atom);
-		} else if (onDismissTooltip) {
-			onDismissTooltip();
-		}
-	});
-
-	const composedGesture = Gesture.Simultaneous(
-		Gesture.Exclusive(panGesture, tapGesture),
-		pinchGesture,
-	);
+	}, [handleTap]);
 
 	return (
-		<GestureDetector gesture={composedGesture}>
+		<GestureDetector gesture={gestures}>
 			<GLView
 				style={styles.glView}
 				onContextCreate={onContextCreate}
