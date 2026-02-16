@@ -17,10 +17,8 @@ interface SceneRefs {
 	rendererRef: { current: Renderer | null };
 	sceneRef: { current: THREE.Scene | null };
 	cameraRef: { current: THREE.PerspectiveCamera | null };
-	animationFrameRef: { current: number | null };
 	rotationX: { value: number };
 	rotationY: { value: number };
-	cameraDistance: { current: number };
 	cleanup: () => void;
 }
 
@@ -51,14 +49,13 @@ export function setupMoleculeScene({
 	const cameraRef: { current: THREE.PerspectiveCamera | null } = {
 		current: null,
 	};
-	const animationFrameRef: { current: number | null } = { current: null };
-	// Use the target shared values directly for current rotation (no interpolation needed)
+	// Use the target shared values directly (no interpolation needed)
 	const rotationX = targetRotationX;
 	const rotationY = targetRotationY;
-	const cameraDistance: { current: number } = { current: 15 };
 
 	// Log counter
 	let frameCount = 0;
+	let animationFrameId: number;
 
 	const renderer = new Renderer({ gl });
 	rendererRef.current = renderer;
@@ -73,10 +70,9 @@ export function setupMoleculeScene({
 	const center = calculateMoleculeCenter(molecule.atoms);
 	const distance = calculateOptimalCameraDistance(molecule.atoms);
 
-	// Initialize all values
+	// Initialize all values - use targetCameraDistance directly (no interpolation)
 	baseCameraDistance.value = distance;
 	targetCameraDistance.value = distance;
-	cameraDistance.current = distance;
 
 	camera.position.set(0, 0, distance);
 	camera.lookAt(0, 0, 0);
@@ -125,21 +121,13 @@ export function setupMoleculeScene({
 
 		// Log every 30 frames
 		if (frameCount % 60 === 0) {
-			console.log("[Render] Frame", frameCount, "rotationX:", rotationX.value.toFixed(2), "rotationY:", rotationY.value.toFixed(2));
+			console.log("[Render] Frame", frameCount);
 		}
 
-		// Smooth zoom interpolation
-		cameraDistance.current +=
-			(targetCameraDistance.value - cameraDistance.current) * 0.1;
-
-		// Clamp camera distance
-		cameraDistance.current = Math.max(
-			2,
-			Math.min(200, cameraDistance.current),
-		);
+		// Clamp camera distance directly
+		const dist = Math.max(2, Math.min(200, targetCameraDistance.value));
 
 		// Update camera position based on rotation (directly use shared values)
-		const dist = cameraDistance.current;
 		camera.position.x =
 			dist * Math.sin(rotationY.value) * Math.cos(rotationX.value);
 		camera.position.y = dist * Math.sin(rotationX.value);
@@ -150,7 +138,7 @@ export function setupMoleculeScene({
 		(renderer as any).render(scene, camera);
 		gl.endFrameEXP();
 
-		animationFrameRef.current = requestAnimationFrame(render);
+		animationFrameId = requestAnimationFrame(render);
 	};
 	render();
 
@@ -159,10 +147,7 @@ export function setupMoleculeScene({
 		console.log("[3D] Cleanup");
 
 		// Cancel animation frame
-		if (animationFrameRef.current !== null) {
-			cancelAnimationFrame(animationFrameRef.current);
-			animationFrameRef.current = null;
-		}
+		cancelAnimationFrame(animationFrameId);
 
 		// Dispose all geometries and materials in the scene
 		const scene = sceneRef.current;
@@ -187,10 +172,8 @@ export function setupMoleculeScene({
 		rendererRef,
 		sceneRef,
 		cameraRef,
-		animationFrameRef,
 		rotationX,
 		rotationY,
-		cameraDistance,
 		cleanup,
 	};
 }

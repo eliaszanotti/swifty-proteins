@@ -77,7 +77,6 @@ function Molecule3DViewInner({
 	// Use useRef for scene and camera so they can be updated and accessed by callbacks
 	const sceneRef = useRef<THREE.Scene | null>(null);
 	const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
-	const animationFrameRef = useRef<number | null>(null);
 	const cleanupRef = useRef<(() => void) | null>(null);
 
 	// Scene setup callback - called when GLView context is created
@@ -102,7 +101,6 @@ function Molecule3DViewInner({
 		// Update refs
 		sceneRef.current = sceneRefs.sceneRef.current;
 		cameraRef.current = sceneRefs.cameraRef.current;
-		animationFrameRef.current = sceneRefs.animationFrameRef.current;
 		cleanupRef.current = sceneRefs.cleanup;
 	};
 
