@@ -18,8 +18,8 @@ interface SceneRefs {
 	sceneRef: { current: THREE.Scene | null };
 	cameraRef: { current: THREE.PerspectiveCamera | null };
 	animationFrameRef: { current: number | null };
-	rotationX: { current: number };
-	rotationY: { current: number };
+	rotationX: { value: number };
+	rotationY: { value: number };
 	cameraDistance: { current: number };
 	cleanup: () => void;
 }
@@ -52,8 +52,9 @@ export function setupMoleculeScene({
 		current: null,
 	};
 	const animationFrameRef: { current: number | null } = { current: null };
-	const rotationX: { current: number } = { current: 0 };
-	const rotationY: { current: number } = { current: 0 };
+	// Use the target shared values directly for current rotation (no interpolation needed)
+	const rotationX = targetRotationX;
+	const rotationY = targetRotationY;
 	const cameraDistance: { current: number } = { current: 15 };
 
 	// Log counter
@@ -124,12 +125,8 @@ export function setupMoleculeScene({
 
 		// Log every 30 frames
 		if (frameCount % 60 === 0) {
-			console.log("[Render] Frame", frameCount);
+			console.log("[Render] Frame", frameCount, "rotationX:", rotationX.value.toFixed(2), "rotationY:", rotationY.value.toFixed(2));
 		}
-
-		// Smooth rotation interpolation
-		rotationX.current += (targetRotationX.value - rotationX.current) * 0.1;
-		rotationY.current += (targetRotationY.value - rotationY.current) * 0.1;
 
 		// Smooth zoom interpolation
 		cameraDistance.current +=
@@ -141,13 +138,13 @@ export function setupMoleculeScene({
 			Math.min(200, cameraDistance.current),
 		);
 
-		// Update camera position based on rotation
+		// Update camera position based on rotation (directly use shared values)
 		const dist = cameraDistance.current;
 		camera.position.x =
-			dist * Math.sin(rotationY.current) * Math.cos(rotationX.current);
-		camera.position.y = dist * Math.sin(rotationX.current);
+			dist * Math.sin(rotationY.value) * Math.cos(rotationX.value);
+		camera.position.y = dist * Math.sin(rotationX.value);
 		camera.position.z =
-			dist * Math.cos(rotationY.current) * Math.cos(rotationX.current);
+			dist * Math.cos(rotationY.value) * Math.cos(rotationX.value);
 		camera.lookAt(0, 0, 0);
 
 		(renderer as any).render(scene, camera);

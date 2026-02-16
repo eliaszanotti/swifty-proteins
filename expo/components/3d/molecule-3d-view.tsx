@@ -141,24 +141,36 @@ function Molecule3DViewInner({
 		}
 	};
 
+	// Store previous translation for delta calculation
+	const prevTranslationX = useSharedValue(0);
+	const prevTranslationY = useSharedValue(0);
+
 	// Pan gesture for rotation
 	const panGesture = Gesture.Pan()
 		.onStart(() => {
 			"worklet";
-			console.log("[Gesture] Pan");
+			prevTranslationX.value = 0;
+			prevTranslationY.value = 0;
 		})
 		.onUpdate((event: any) => {
 			"worklet";
-			if (event.translationX !== undefined && event.translationY !== undefined) {
-				targetRotationY.value -= event.translationX * 0.005;
-				targetRotationX.value += event.translationY * 0.005;
+			// Calculate delta from previous position
+			const deltaX = event.translationX - prevTranslationX.value;
+			const deltaY = event.translationY - prevTranslationY.value;
 
-				// Clamp vertical rotation
-				targetRotationX.value = Math.max(
-					-Math.PI / 2 + 0.1,
-					Math.min(Math.PI / 2 - 0.1, targetRotationX.value),
-				);
-			}
+			// Update previous values
+			prevTranslationX.value = event.translationX;
+			prevTranslationY.value = event.translationY;
+
+			// Apply rotation
+			targetRotationY.value -= deltaX * 0.02;
+			targetRotationX.value += deltaY * 0.02;
+
+			// Clamp vertical rotation
+			targetRotationX.value = Math.max(
+				-Math.PI / 2 + 0.1,
+				Math.min(Math.PI / 2 - 0.1, targetRotationX.value),
+			);
 		});
 
 	// Pinch gesture for zoom
@@ -166,7 +178,6 @@ function Molecule3DViewInner({
 		.onStart(() => {
 			"worklet";
 			baseCameraDistance.value = targetCameraDistance.value;
-			console.log("[Gesture] Pinch");
 		})
 		.onUpdate((event: any) => {
 			"worklet";
