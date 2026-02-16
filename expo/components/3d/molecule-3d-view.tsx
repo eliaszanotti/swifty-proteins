@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { View, StyleSheet, DimensionValue } from "react-native";
 import { GLView, ExpoWebGLRenderingContext } from "expo-gl";
 import { GestureDetector, Gesture } from "react-native-gesture-handler";
@@ -65,6 +65,9 @@ function Molecule3DViewInner({
 	width,
 	height,
 }: Molecule3DViewInnerProps) {
+	// Unique key for molecule to force GLView recreation
+	const moleculeKey = `${molecule.name}-${molecule.atoms.length}-${molecule.bonds.length}`;
+
 	// Shared values for gesture control
 	const targetRotationX = useSharedValue(0);
 	const targetRotationY = useSharedValue(0);
@@ -75,10 +78,19 @@ function Molecule3DViewInner({
 	const sceneRef = useRef<THREE.Scene | null>(null);
 	const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
 	const animationFrameRef = useRef<number | null>(null);
+	const cleanupRef = useRef<(() => void) | null>(null);
 
-	// Scene setup callback
+	// Scene setup callback - called when GLView context is created
 	const onContextCreate = (gl: ExpoWebGLRenderingContext) => {
-		console.log("[View] onContextCreate called");
+		console.log("[View] onContextCreate called for molecule:", molecule.name);
+
+		// Clean up any previous scene (shouldn't happen with key prop, but just in case)
+		if (cleanupRef.current) {
+			console.log("[View] Cleaning up previous scene");
+			cleanupRef.current();
+			cleanupRef.current = null;
+		}
+
 		const sceneRefs = setupMoleculeScene({
 			gl,
 			molecule,
@@ -94,9 +106,20 @@ function Molecule3DViewInner({
 		sceneRef.current = sceneRefs.sceneRef.current;
 		cameraRef.current = sceneRefs.cameraRef.current;
 		animationFrameRef.current = sceneRefs.animationFrameRef.current;
+		cleanupRef.current = sceneRefs.cleanup;
 
-		console.log("[View] Refs updated - scene exists:", !!sceneRef.current, "camera exists:", !!cameraRef.current);
+		console.log("[View] Scene setup complete - scene:", !!sceneRef.current, "camera:", !!cameraRef.current);
 	};
+
+	// Cleanup on unmount
+	useEffect(() => {
+		return () => {
+			if (cleanupRef.current) {
+				console.log("[View] Component unmounting - cleaning up scene");
+				cleanupRef.current();
+			}
+		};
+	}, []);
 
 	// Tap handler - accesses refs via useRef so it always gets current values
 	const handleTap = (x: number, y: number) => {
@@ -134,9 +157,9 @@ function Molecule3DViewInner({
 		})
 		.onUpdate((event: any) => {
 			"worklet";
-			if (event.translationX !== undefined && event.translationY !== undefined) {
-				targetRotationY.value -= event.translationX * 0.005;
-				targetRotationX.value += event.translationY * 0.005;
+			if (event.changeX !== undefined && event.changeY !== undefined) {
+				targetRotationY.value -= event.changeX * 0.005;
+				targetRotationX.value += event.changeY * 0.005;
 
 				// Clamp vertical rotation
 				targetRotationX.value = Math.max(
@@ -185,6 +208,7 @@ function Molecule3DViewInner({
 	return (
 		<GestureDetector gesture={gestures}>
 			<GLView
+				key={moleculeKey}
 				style={styles.glView}
 				onContextCreate={onContextCreate}
 				msaaSamples={4}

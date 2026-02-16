@@ -14,6 +14,7 @@ interface SceneRefs {
     rotationX: { current: number };
     rotationY: { current: number };
     cameraDistance: { current: number };
+    cleanup: () => void;
 }
 
 interface SetupSceneParams {
@@ -161,6 +162,36 @@ export function setupMoleculeScene({
     };
     render();
 
+    // Cleanup function to dispose resources
+    const cleanup = () => {
+        console.log("[Scene] Cleaning up resources...");
+
+        // Cancel animation frame
+        if (animationFrameRef.current !== null) {
+            cancelAnimationFrame(animationFrameRef.current);
+            animationFrameRef.current = null;
+        }
+
+        // Dispose all geometries and materials in the scene
+        const scene = sceneRef.current;
+        if (scene) {
+            for (const child of scene.children) {
+                if (child instanceof THREE.Mesh) {
+                    child.geometry?.dispose();
+                    if (child.material instanceof THREE.Material) {
+                        child.material.dispose();
+                    }
+                }
+            }
+            scene.clear();
+        }
+
+        // Dispose renderer
+        rendererRef.current?.dispose();
+        rendererRef.current = null;
+
+        console.log("[Scene] Cleanup complete");
+    };
     return {
         rendererRef,
         sceneRef,
@@ -169,5 +200,6 @@ export function setupMoleculeScene({
         rotationX,
         rotationY,
         cameraDistance,
+        cleanup,
     };
 }
