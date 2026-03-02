@@ -1,1 +1,3 @@
-- Voir le leger pb de zoom sur les molecules
+- Modifier .sdf en .cif
+- Mettre à jour le sujet
+- Outil capture d'écran sur share button
