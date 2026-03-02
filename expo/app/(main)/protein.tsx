@@ -35,10 +35,11 @@ export default function ProteinScreen() {
 			const sdfContent = await fetchLigandFile(ligandId);
 			const moleculeData = parseSdfFile(sdfContent);
 			setMolecule(moleculeData);
-		} catch {
+		} catch (error: any) {
+			const errorMessage = error?.message || `Could not load ligand "${ligandId}" from the RCSB database.`;
 			Alert.alert(
 				"Loading Failed",
-				`Could not load ligand "${ligandId}" from the RCSB database.`,
+				errorMessage,
 				[{ text: "OK", onPress: () => router.back() }],
 			);
 		} finally {

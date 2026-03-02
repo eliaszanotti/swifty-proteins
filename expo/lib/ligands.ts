@@ -31,11 +31,37 @@ export async function loadLigands(): Promise<Ligand[]> {
 export async function fetchLigandFile(ligandId: string): Promise<string> {
     const url = `https://files.rcsb.org/ligands/download/${ligandId}_ideal.sdf`;
 
-    const response = await fetch(url);
+    try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 30000);
 
-    if (!response.ok) {
-        throw new Error(`Failed to fetch ligand file for ${ligandId}`);
+        const response = await fetch(url, {
+            signal: controller.signal,
+        });
+
+        clearTimeout(timeoutId);
+
+        if (!response.ok) {
+            if (response.status === 404) {
+                throw new Error(`Ligand not found (404). This ligand may not exist in the database.`);
+            }
+            throw new Error(`Failed to fetch ligand file (HTTP ${response.status})`);
+        }
+
+        const text = await response.text();
+
+        if (!text || text.trim().length === 0) {
+            throw new Error(`Failed to parse ligand data. The file may be corrupted.`);
+        }
+
+        return text;
+    } catch (error: any) {
+        if (error.name === 'AbortError') {
+            throw new Error(`Request timeout. Please try again.`);
+        }
+        if (error.message.includes('Network request failed') || error.message.includes('fetch')) {
+            throw new Error(`No internet connection. Please check your network.`);
+        }
+        throw error;
     }
-
-    return await response.text();
 }
