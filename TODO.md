@@ -1,3 +1,2 @@
-- Modifier .sdf en .cif
-- Mettre à jour le sujet
 - Outil capture d'écran sur share button
+- Verifier orientation et screen size

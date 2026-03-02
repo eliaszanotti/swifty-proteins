@@ -47,6 +47,8 @@ export default function LigandsScreen() {
 						autoCapitalize="none"
 						value={searchQuery}
 						onChangeText={setSearchQuery}
+						accessibilityLabel="Search ligands"
+						accessibilityHint="Type to filter the ligand list"
 					/>
 				</YStack>
 
@@ -70,6 +72,8 @@ export default function LigandsScreen() {
 								onPress={() =>
 									router.push(`/(main)/protein?id=${item.id}`)
 								}
+								accessibilityLabel={`Ligand ${item.name}`}
+								accessibilityHint="Double tap to view 3D structure"
 							>
 								{item.name}
 							</Button>

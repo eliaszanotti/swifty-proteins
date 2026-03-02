@@ -76,6 +76,8 @@ export default function RegisterScreen() {
 					autoCapitalize="words"
 					value={name}
 					onChangeText={setName}
+					accessibilityLabel="Name"
+					accessibilityHint="Enter your full name"
 				/>
 
 				<Input
@@ -84,6 +86,8 @@ export default function RegisterScreen() {
 					keyboardType="email-address"
 					value={email}
 					onChangeText={setEmail}
+					accessibilityLabel="Email address"
+					accessibilityHint="Enter your email"
 				/>
 
 				<Input
@@ -91,6 +95,8 @@ export default function RegisterScreen() {
 					secureTextEntry
 					value={password}
 					onChangeText={setPassword}
+					accessibilityLabel="Password"
+					accessibilityHint="Enter a password with at least 8 characters"
 				/>
 
 				<Input
@@ -98,12 +104,16 @@ export default function RegisterScreen() {
 					secureTextEntry
 					value={confirmPassword}
 					onChangeText={setConfirmPassword}
+					accessibilityLabel="Confirm password"
+					accessibilityHint="Re-enter your password"
 				/>
 
 				<Button
 					onPress={handleRegister}
 					disabled={registerMutation.isPending}
 					opacity={registerMutation.isPending ? 0.5 : 1}
+					accessibilityLabel="Create account"
+					accessibilityHint="Double tap to create your account"
 				>
 					{registerMutation.isPending ? "Creating Account..." : "Sign Up"}
 				</Button>

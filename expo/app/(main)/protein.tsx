@@ -68,7 +68,12 @@ export default function ProteinScreen() {
 			<YStack flex={1} bg="$background" gap="$4">
 				{/* Header */}
 				<XStack gap="$2" p="$4" style={{ alignItems: "center" }}>
-					<Button size="$3" onPress={() => router.back()}>
+					<Button
+						size="$3"
+						onPress={() => router.back()}
+						accessibilityLabel="Go back"
+						accessibilityHint="Return to ligand list"
+					>
 						Back
 					</Button>
 					<Text fontSize="$6" fontWeight="bold">
@@ -77,7 +82,11 @@ export default function ProteinScreen() {
 				</XStack>
 
 				{/* 3D View */}
-				<View style={styles.viewContainer}>
+				<View
+					style={styles.viewContainer}
+					accessibilityLabel="3D molecular structure view"
+					accessibilityHint="Interactive 3D visualization of the ligand. Use gestures to rotate and zoom"
+				>
 					{molecule ? (
 						<Molecule3DView
 							molecule={molecule}
@@ -124,6 +133,8 @@ export default function ProteinScreen() {
 						onPress={() => setDisplayMode(
 							displayMode === 'ball-and-stick' ? 'space-filling' : 'ball-and-stick'
 						)}
+						accessibilityLabel="Toggle display mode"
+						accessibilityHint={`Switch to ${displayMode === 'ball-and-stick' ? 'space-filling' : 'ball and stick'} visualization`}
 					>
 						{displayMode === 'ball-and-stick' ? 'Space-Filling' : 'Ball & Stick'}
 					</Button>

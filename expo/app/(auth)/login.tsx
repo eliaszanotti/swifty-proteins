@@ -96,6 +96,8 @@ export default function LoginScreen() {
 					keyboardType="email-address"
 					value={email}
 					onChangeText={setEmail}
+					accessibilityLabel="Email address"
+					accessibilityHint="Enter your email to sign in"
 				/>
 
 				<Input
@@ -103,6 +105,8 @@ export default function LoginScreen() {
 					secureTextEntry
 					value={password}
 					onChangeText={setPassword}
+					accessibilityLabel="Password"
+					accessibilityHint="Enter your password"
 				/>
 
 				<YStack gap="$2">
@@ -110,6 +114,8 @@ export default function LoginScreen() {
 						onPress={handleLogin}
 						disabled={loginMutation.isPending}
 						opacity={loginMutation.isPending ? 0.5 : 1}
+						accessibilityLabel="Sign in"
+						accessibilityHint="Double tap to sign in with your credentials"
 					>
 						{loginMutation.isPending ? "Signing In..." : "Sign In"}
 					</Button>
@@ -119,6 +125,8 @@ export default function LoginScreen() {
 							onPress={handleBiometricLogin}
 							disabled={loginMutation.isPending}
 							opacity={loginMutation.isPending ? 0.5 : 1}
+							accessibilityLabel="Sign in with biometric"
+							accessibilityHint="Double tap to authenticate with Face ID or Touch ID"
 						>
 							Sign in with Face ID
 						</Button>
