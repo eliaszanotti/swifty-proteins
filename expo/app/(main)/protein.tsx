@@ -1,9 +1,12 @@
-import { useLocalSearchParams, router } from "expo-router";
-import { useEffect, useState } from "react";
-import { Alert, View, StyleSheet } from "react-native";
+import { router, useLocalSearchParams } from "expo-router";
+import { useEffect, useRef, useState } from "react";
+import { Alert, StyleSheet, View } from "react-native";
 import { Button, Paragraph, Text, XStack, YStack } from "tamagui";
 import { SafeView } from "@/components/safe-view";
-import { Molecule3DView } from "@/components/3d/molecule-3d-view";
+import {
+	Molecule3DView,
+	type Molecule3DViewHandle,
+} from "@/components/3d/molecule-3d-view";
 import { LoadingView } from "@/components/ui/loading-view";
 import { AtomTooltip } from "@/components/ui/atom-tooltip";
 import { ShareButton } from "@/components/ui/share-button";
@@ -17,6 +20,7 @@ export default function ProteinScreen() {
 	const [molecule, setMolecule] = useState<MoleculeData | null>(null);
 	const [selectedAtom, setSelectedAtom] = useState<Atom | null>(null);
 	const [displayMode, setDisplayMode] = useState<DisplayMode>('ball-and-stick');
+	const molecule3DRef = useRef<Molecule3DViewHandle>(null);
 
 	useEffect(() => {
 		if (!id) {
@@ -89,6 +93,7 @@ export default function ProteinScreen() {
 				>
 					{molecule ? (
 						<Molecule3DView
+							ref={molecule3DRef}
 							molecule={molecule}
 							onAtomSelect={handleAtomSelect}
 							onDismissTooltip={handleDismissTooltip}
@@ -126,6 +131,7 @@ export default function ProteinScreen() {
 						<ShareButton
 							ligandId={id}
 							moleculeName={molecule?.name}
+							molecule3DRef={molecule3DRef}
 						/>
 					)}
 					<Button

@@ -3,7 +3,7 @@
     "name": "mobile",
     "slug": "mobile",
     "version": "1.0.0",
-    "orientation": "portrait",
+    "orientation": "default",
     "icon": "./assets/images/expression.png",
     "scheme": "mobile",
     "userInterfaceStyle": "automatic",
@@ -11,7 +11,9 @@
     "ios": {
       "supportsTablet": true,
       "infoPlist": {
-        "NSFaceIDUsageDescription": "We use Face ID to securely authenticate you"
+        "NSFaceIDUsageDescription": "We use Face ID to securely authenticate you",
+        "NSPhotoLibraryAddUsageDescription": "We need access to save screenshots of 3D protein structures to your photo library",
+        "NSPhotoLibraryUsageDescription": "We need access to save screenshots of 3D protein structures to your photo library"
       },
       "bundleIdentifier": "com.luhumber.swiftyproteins"
     },
@@ -27,8 +29,8 @@
       "permissions": [
         "USE_BIOMETRIC",
         "USE_FINGERPRINT",
-        "USE_BIOMETRIC",
-        "USE_FINGERPRINT"
+        "READ_MEDIA_IMAGES",
+        "WRITE_EXTERNAL_STORAGE"
       ],
       "package": "com.luhumber.swiftyproteins"
     },

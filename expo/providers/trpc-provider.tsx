@@ -10,7 +10,7 @@ export function TRPCProvider({ children }: { children: React.ReactNode }) {
 			links: [
 				httpBatchLink({
 					// url: "http://localhost:3000/api/trpc",
-					url: "http://10.64.1.60:3000/api/trpc",
+					url: "http://10.48.145.69:3000/api/trpc",
 					// url: "http://10.19.232.52:3000/api/trpc",
 				}),
 			],
